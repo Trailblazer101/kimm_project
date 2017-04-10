@@ -7,6 +7,8 @@ import javax.swing.JLabel;
 import javax.swing.JButton;
 
 import java.awt.event.ActionListener;
+import java.io.IOException;
+import java.net.Socket;
 import java.awt.event.ActionEvent;
 
 import javax.swing.JMenuBar;
@@ -14,12 +16,37 @@ import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 
 import java.sql.*;
+import java.awt.CardLayout;
+import javax.swing.JPanel;
+import java.awt.BorderLayout;
+import javax.swing.SwingConstants;
+
+import com.networking.semesterProject.Client.ClientHelper;
+import com.networking.semesterProject.Client.ClientInterface;
+import com.networking.semesterProject.Client.ClientWindow;
+import com.networking.semesterProject.Server.ServerHelper;
+import com.networking.semesterProject.Server.ServerInterface;
+
+import java.awt.FlowLayout;
+import javax.swing.GroupLayout;
+import javax.swing.GroupLayout.Alignment;
+import javax.swing.LayoutStyle.ComponentPlacement;
+
+import net.miginfocom.swing.MigLayout;
+import javax.swing.BoxLayout;
+import java.awt.GridBagLayout;
+import java.awt.GridBagConstraints;
+import java.awt.Insets;
+import javax.swing.JInternalFrame;
+import javax.swing.JScrollPane;
+import javax.swing.JDesktopPane;
 
 public class LoginWindow {
-
+	
 	private JFrame frame;
 	private JTextField textField;
 	private JTextField textField_1;
+	private ServerHelper serverHelper;
 
 	/**
 	 * Launch the application.
@@ -51,39 +78,177 @@ public class LoginWindow {
 	 */
 	private void initialize() {
 		frame = new JFrame();
-		frame.setBounds(100, 100, 450, 300);
+		frame.setBounds(100, 100, 460, 367);
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		frame.getContentPane().setLayout(null);
+		
+		final CardLayout cardLayout = new CardLayout(0, 0);
+		frame.getContentPane().setLayout(cardLayout);
+		
+		JPanel panel = new JPanel();
+		frame.getContentPane().add(panel, "name_238221794140412");
+												GridBagLayout gbl_panel = new GridBagLayout();
+												gbl_panel.columnWidths = new int[] {61, 70, 0, 92};
+												gbl_panel.rowHeights = new int[]{45, 0, 0, 0, 0, 0, 0};
+												gbl_panel.columnWeights = new double[]{0.0, 0.0, 1.0, 0.0};
+												gbl_panel.rowWeights = new double[]{0.0, 0.0, 0.0, 1.0, 0.0, 0.0, Double.MIN_VALUE};
+												panel.setLayout(gbl_panel);
+																
+																		JLabel lblUsername = new JLabel("Username:");
+																		GridBagConstraints gbc_lblUsername = new GridBagConstraints();
+																		gbc_lblUsername.fill = GridBagConstraints.VERTICAL;
+																		gbc_lblUsername.insets = new Insets(0, 0, 5, 5);
+																		gbc_lblUsername.gridx = 1;
+																		gbc_lblUsername.gridy = 1;
+																		panel.add(lblUsername, gbc_lblUsername);
+																
+																		textField_1 = new JTextField();
+																		textField_1.setColumns(10);
+																		GridBagConstraints gbc_textField_1 = new GridBagConstraints();
+																		gbc_textField_1.fill = GridBagConstraints.BOTH;
+																		gbc_textField_1.insets = new Insets(0, 0, 5, 5);
+																		gbc_textField_1.gridx = 3;
+																		gbc_textField_1.gridy = 1;
+																		panel.add(textField_1, gbc_textField_1);
+														
+																JLabel lblPassword = new JLabel("Password:");
+																GridBagConstraints gbc_lblPassword = new GridBagConstraints();
+																gbc_lblPassword.fill = GridBagConstraints.VERTICAL;
+																gbc_lblPassword.insets = new Insets(0, 0, 5, 5);
+																gbc_lblPassword.gridx = 1;
+																gbc_lblPassword.gridy = 2;
+																panel.add(lblPassword, gbc_lblPassword);
+																								lblUsername.setLabelFor(textField);
+																								
+																										textField = new JTextField();
+																										textField.setColumns(10);
+																										GridBagConstraints gbc_textField = new GridBagConstraints();
+																										gbc_textField.fill = GridBagConstraints.BOTH;
+																										gbc_textField.insets = new Insets(0, 0, 5, 5);
+																										gbc_textField.gridx = 3;
+																										gbc_textField.gridy = 2;
+																										panel.add(textField, gbc_textField);
+																						
+																								final JButton loginButton = new JButton("Login");
+																								GridBagConstraints gbc_loginButton = new GridBagConstraints();
+																								gbc_loginButton.fill = GridBagConstraints.VERTICAL;
+																								gbc_loginButton.insets = new Insets(0, 0, 5, 0);
+																								gbc_loginButton.gridwidth = 5;
+																								gbc_loginButton.gridx = 0;
+																								gbc_loginButton.gridy = 4;
+																								panel.add(loginButton, gbc_loginButton);
+																								
+																								
+																								
+														loginButton.addActionListener(new ActionListener() {
+															public void actionPerformed(ActionEvent arg0) {
+																
+																loginButton.setEnabled(false);
 
-		textField = new JTextField();
-		textField.setBounds(166, 65, 114, 19);
-		frame.getContentPane().add(textField);
-		textField.setColumns(10);
+																ClientHelper clientHelper = new ClientHelper(new ClientInterface(){
 
-		textField_1 = new JTextField();
-		textField_1.setBounds(166, 143, 114, 19);
-		frame.getContentPane().add(textField_1);
-		textField_1.setColumns(10);
+																	Boolean isFailed = false;
+																	@Override
+																	public void OnConnected(Socket clientSocket, Message message) {
+																		// TODO Auto-generated method stub
+																		ClientWindow clientWindow = new ClientWindow(clientSocket, message);
+																		clientWindow.Show();
+																	}
 
-		JLabel lblUsername = new JLabel("Username:");
-		lblUsername.setLabelFor(textField);
-		lblUsername.setBounds(67, 41, 103, 15);
-		frame.getContentPane().add(lblUsername);
+																	@Override
+																	public void OnFailed() {
+																		// TODO Auto-generated method stub
+																		ErrorDialog dialog = new ErrorDialog("Couldn't Connect To Server...");
 
-		JLabel lblPassword = new JLabel("Password:");
-		lblPassword.setBounds(67, 112, 103, 15);
-		frame.getContentPane().add(lblPassword);
+																		dialog.showDialog();
+																		
+																		loginButton.setEnabled(true);
+																		
+																		isFailed = true;
+																	}
 
-		final JButton btnNewButton = new JButton("Login");
-		btnNewButton.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent arg0) {
+																	@Override
+																	public void OnDisconnected() {
+																		// TODO Auto-generated method stub
+																		
+																		if(!isFailed)
+																		{
+																			ErrorDialog dialog = new ErrorDialog("Disconnected From Server...");
+	
+																			dialog.showDialog();
+																			
+																			loginButton.setEnabled(true);
+																		}
+																	}});	
+																
+																clientHelper.Start();
+															}
+														});
+												
+												JPanel panel_1 = new JPanel();
+												frame.getContentPane().add(panel_1, "name_238616311173393");
+												GridBagLayout gbl_panel_1 = new GridBagLayout();
+												gbl_panel_1.columnWidths = new int[]{0, 0, 0, 0, 0};
+												gbl_panel_1.rowHeights = new int[]{190, 0, 0, 0};
+												gbl_panel_1.columnWeights = new double[]{1.0, 0.0, 0.0, 1.0, Double.MIN_VALUE};
+												gbl_panel_1.rowWeights = new double[]{1.0, 0.0, 0.0, Double.MIN_VALUE};
+												panel_1.setLayout(gbl_panel_1);
+												
+												final JButton stopServerButton = new JButton("Stop Server");
+												final JButton startServerButton = new JButton("Start Server");
+												startServerButton.addActionListener(new ActionListener() {
+													public void actionPerformed(ActionEvent arg0) {
+																							
+														serverHelper = new ServerHelper();
+														
+														startServerButton.setEnabled(false);
+														
+														serverHelper.Start(new ServerInterface(){
 
-				ClientWindow clientWindow = new ClientWindow();
-				clientWindow.Show();
-			}
-		});
-		btnNewButton.setBounds(180, 202, 81, 25);
-		frame.getContentPane().add(btnNewButton);
+															@Override
+															public void OnStopped() {
+																// TODO Auto-generated method stub
+																//startServerButton.setEnabled(true);
+																ErrorDialog dialog = new ErrorDialog("Couldn't Start Server...");
+
+																dialog.showDialog();
+															}});
+														
+														stopServerButton.setEnabled(true);
+													}
+												});
+												GridBagConstraints gbc_startServerButton = new GridBagConstraints();
+												gbc_startServerButton.fill = GridBagConstraints.VERTICAL;
+												gbc_startServerButton.insets = new Insets(0, 0, 5, 5);
+												gbc_startServerButton.gridx = 1;
+												gbc_startServerButton.gridy = 1;
+												panel_1.add(startServerButton, gbc_startServerButton);
+												
+												
+												stopServerButton.setEnabled(false);
+												stopServerButton.addActionListener(new ActionListener() {
+													public void actionPerformed(ActionEvent arg0) {
+														
+														try {
+															serverHelper.Stop(new ServerInterface(){
+
+																@Override
+																public void OnStopped() {
+																	// TODO Auto-generated method stub
+																	startServerButton.setEnabled(true);
+																}});
+														} catch (IOException e) {
+															// TODO Auto-generated catch block
+															System.out.println("Already Stopped");
+														}
+														stopServerButton.setEnabled(false);
+													}
+												});
+												GridBagConstraints gbc_stopServerButton = new GridBagConstraints();
+												gbc_stopServerButton.fill = GridBagConstraints.VERTICAL;
+												gbc_stopServerButton.insets = new Insets(0, 0, 5, 5);
+												gbc_stopServerButton.gridx = 2;
+												gbc_stopServerButton.gridy = 1;
+												panel_1.add(stopServerButton, gbc_stopServerButton);
 
 		JMenuBar menuBar = new JMenuBar();
 		frame.setJMenuBar(menuBar);
@@ -107,15 +272,12 @@ public class LoginWindow {
 				Boolean isAdmin = dialog.showDialog();
 
 				if (isAdmin) {
-					btnNewButton.setText("Start Server");
+					//btnNewButton.setText("Start Server");
+					cardLayout.next(frame.getContentPane());
 				}
 			}
 
 		});
 		mnHelp.add(mntmAdmin);
-	}
-
-	public void test() {
-
 	}
 }

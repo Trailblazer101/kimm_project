@@ -1,4 +1,4 @@
-package com.networking.semesterProject;
+package com.networking.semesterProject.Client;
 
 import javax.swing.JPanel;
 import javax.swing.JTable;
