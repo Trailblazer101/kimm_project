@@ -2,6 +2,12 @@ package com.networking.semesterProject.Server;
 
 import java.io.*;
 import java.net.*;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.sql.Timestamp;
 import java.util.*;
 
 import com.networking.semesterProject.Message;
@@ -38,10 +44,8 @@ public class MessageHelper implements Runnable {
 	public void run() {
 
 		//List<Socket> socketList = new ArrayList<Socket>();
-
-		try {
-			
-			
+	
+		try {			
 				//Socket connectionSocket = welcomeSocket.accept();
 
 				// connectionSocket.
@@ -86,7 +90,6 @@ public class MessageHelper implements Runnable {
 				// capitalizedSentence = clientSentence.toUpperCase() + '\n';
 				//outToClient.writeBytes("Welcome!");
 			}
-
 		} catch (IOException e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
@@ -96,6 +99,7 @@ public class MessageHelper implements Runnable {
 		} finally {
 			try {
 				//if(!welcomeSocket.isClosed())
+
 				clientSocket.close();
 				
 			} catch (IOException e1) {

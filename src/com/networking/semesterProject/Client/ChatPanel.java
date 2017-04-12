@@ -16,6 +16,9 @@ import javax.swing.JTextField;
 import java.awt.Insets;
 import java.io.*;
 import java.net.*;
+
+import java.time.*;
+import java.time.format.DateTimeFormatter;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 
@@ -60,7 +63,14 @@ public class ChatPanel extends JPanel {
 						Message message = (Message)inFromServer.readObject();
 						
 						if(message.type == Type.Send)
-							textArea.append(message.message + "\n");
+						{
+							ZoneId zoneId = ZoneId.of( "America/New_York" );
+							ZonedDateTime zdt = ZonedDateTime.ofInstant( message.timestamp , zoneId );
+											
+							DateTimeFormatter formatter = DateTimeFormatter.ofPattern( "uuuu.MM.dd.HH.mm.ss" );
+
+							textArea.append(zdt.format(formatter) + ": " + message.message + "\n");	
+						}
 						else if(message.type == Type.Disconnect)
 						{
 							textArea.setText("Disconnected With Message:\n\t" + message.message + "\n");
@@ -111,8 +121,19 @@ public class ChatPanel extends JPanel {
 				
 				if(message.type == Type.Init)
 				{
+					String gotMessage = textField.getText();
+					
+					Instant instant = Instant.now();
+					
+					ZoneId zoneId = ZoneId.of( "America/New_York" );
+					ZonedDateTime zdt = ZonedDateTime.ofInstant( instant , zoneId );
+									
+					DateTimeFormatter formatter = DateTimeFormatter.ofPattern( "uuuu.MM.dd.HH.mm.ss" );
+
+					textArea.append(zdt.format(formatter) + ": " + gotMessage + "\n");	
+							
 					MessageHelper messageHelper = new MessageHelper();
-					messageHelper.Start(clientSocket, new Message(Type.Send, message.source, null, textField.getText()));
+					messageHelper.Start(clientSocket, new Message(Type.Send, message.source, null, gotMessage, instant));
 				}
 			}
 		});

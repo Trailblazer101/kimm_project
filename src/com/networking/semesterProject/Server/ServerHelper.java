@@ -2,10 +2,12 @@ package com.networking.semesterProject.Server;
 
 import java.io.*;
 import java.net.*;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.*;
 
-import com.networking.semesterProject.ErrorDialog;
-import com.networking.semesterProject.LoginWindow;
 import com.networking.semesterProject.Message;
 import com.networking.semesterProject.Message.Type;
 
@@ -29,68 +31,133 @@ public class ServerHelper implements Runnable {
 
 		List<MessageHelper> socketList = new ArrayList<MessageHelper>();
 
+		Connection conn = null;
+		Statement statement = null;
+
 		try {
+			conn = DriverManager.getConnection("jdbc:mysql://localhost/?user=root&password=tst12368");
+			statement = conn.createStatement();
+			statement.executeUpdate("create database if not exists networkProject");
+
+			statement.close();
+
+			conn.setCatalog("networkProject");
+
+			statement = conn.createStatement();
+
+			String createMessageTable = "CREATE TABLE if not exists MessageTable ("
+					+ "messageID INT(64) NOT NULL AUTO_INCREMENT," + "messageText VARCHAR(500) NULL, "
+					+ "messageTS TIMESTAMP NULL," + "PRIMARY KEY(messageID))";
+
+			statement.executeUpdate(createMessageTable);
+
+			String createUserTable = "CREATE TABLE if not exists UserTable ("
+					+ "userID INT(64) NOT NULL AUTO_INCREMENT," + "userFirstName VARCHAR(25) NULL, "
+					+ "userLastName VARCHAR(25) NULL, " + "PRIMARY KEY(userID))";
+
+			statement.executeUpdate(createUserTable);
+
+			String createMessageTypeTable = "CREATE TABLE if not exists MessageTypeTable ("
+					+ "messageTypeID INT(64) NOT NULL AUTO_INCREMENT," + "messageTypeName VARCHAR(25) NULL, "
+					+ "PRIMARY KEY(messageTypeID))";
+
+			statement.executeUpdate(createMessageTypeTable);
+
+			String createMessageToUserTable = "CREATE TABLE if not exists MessageToUserTable ("
+					+ "messageToUserID INT(64) NOT NULL AUTO_INCREMENT," + "userID INT(64) NOT NULL,"
+					+ "messageID INT(64) NOT NULL," + "messageTypeID INT(64) NOT NULL,"
+					+ "PRIMARY KEY(messageToUserID))";
+
+			statement.executeUpdate(createMessageToUserTable);
+
+			//String insertDefaultMessageTypes = "INSERT INTO MessageTypeTable " + "(messageTypeName)"
+			//		+ " SELECT ('Send'), ('Receive')" + " WHERE 0 = (SELECT COUNT(*) FROM MessageTypeTable );";
+			
+			
+			String insertDefaultMessageTypes = "INSERT INTO MessageTypeTable (messageTypeName)"
+		    + " select t.*"
+		    + " from ((SELECT 'Send' as messageTypeName"
+		          + ") union all"
+		          + " (SELECT 'Receive')"
+		         + ") t"
+		    + " WHERE NOT EXISTS (SELECT * FROM MessageTypeTable)";
+
+			statement.executeUpdate(insertDefaultMessageTypes);
+			
+			statement.close();
+			
+			conn.close();
+
 			welcomeSocket = new ServerSocket(9000);
 
 			while (!welcomeSocket.isClosed()) {
 				Socket connectionSocket = welcomeSocket.accept();
 
 				// connectionSocket.
-				
 
-				ObjectOutputStream outToServer = new
-				ObjectOutputStream(connectionSocket.getOutputStream());
-				
+				ObjectOutputStream outToServer = new ObjectOutputStream(connectionSocket.getOutputStream());
+
 				// ObjectInputStream inFromServer = new
 				// ObjectInputStream(connectionSocket.getInputStream());
 
 				// BufferedReader inFromClient = new BufferedReader(
 				// new InputStreamReader(connectionSocket.getInputStream()));
 
-				//DataOutputStream outToClient = new DataOutputStream(connectionSocket.getOutputStream());
+				// DataOutputStream outToClient = new
+				// DataOutputStream(connectionSocket.getOutputStream());
 
 				// clientSentence = inFromClient.readLine();
 
 				// capitalizedSentence = clientSentence.toUpperCase() + '\n';
-				//outToClient.writeBytes("Welcome!");
-				outToServer.writeObject(new Message(Type.Init, socketList.size(), null, "Welcome!"));
-				
-				//outToServer.close();
-				
+				// outToClient.writeBytes("Welcome!");
+				outToServer.writeObject(new Message(Type.Init, socketList.size(), null, "Welcome!", null));
+
+				// outToServer.close();
+
 				MessageHelper messageHelper = new MessageHelper(stopped, socketList.size(), socketList);
 				messageHelper.Start(connectionSocket);
-				
+
 				socketList.add(messageHelper);
 			}
 
-		} catch (IOException e1) {
+		} catch (SQLException ex) {
+			ex.printStackTrace();
+		} catch (IOException e) {
 			// TODO Auto-generated catch block
-			e1.printStackTrace();
+			e.printStackTrace();
 		} finally {
 			try {
-				for (MessageHelper messageHelper : socketList) {
-					
-					ObjectOutputStream outToServer = new
-							ObjectOutputStream(messageHelper.clientSocket.getOutputStream());
-					
-					outToServer.writeObject(new Message(Type.Disconnect, null, null, "Server Asked You To Leave!"));
-					//messageHelper.clientSocket.close();
-				} //REPLACE WITH CLOSE FROM CLIENT SIDE, TO BE NICE!
 
-				//if(!welcomeSocket.isClosed())
+				//if (statement != null)
+				//	statement.close();
+
+				for (MessageHelper messageHelper : socketList) {
+
+					ObjectOutputStream outToServer = new ObjectOutputStream(
+							messageHelper.clientSocket.getOutputStream());
+
+					outToServer
+							.writeObject(new Message(Type.Disconnect, null, null, "Server Asked You To Leave!", null));
+					// messageHelper.clientSocket.close();
+				} // REPLACE WITH CLOSE FROM CLIENT SIDE, TO BE NICE!
+
+				// if(!welcomeSocket.isClosed())
 				welcomeSocket.close();
-				
+
 			} catch (IOException e1) {
 				// TODO Auto-generated catch block
 				e1.printStackTrace();
-			}
+			/*} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			*/}
 
 			stopped.OnStopped();
 		}
 	}
 
 	public void Start(ServerInterface stopCallback) {
-		
+
 		stopped = stopCallback;
 		new Thread(this).start();
 	}

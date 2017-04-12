@@ -15,31 +15,17 @@ import javax.swing.JMenuBar;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 
-import java.sql.*;
 import java.awt.CardLayout;
 import javax.swing.JPanel;
-import java.awt.BorderLayout;
-import javax.swing.SwingConstants;
-
 import com.networking.semesterProject.Client.ClientHelper;
 import com.networking.semesterProject.Client.ClientInterface;
 import com.networking.semesterProject.Client.ClientWindow;
 import com.networking.semesterProject.Server.ServerHelper;
 import com.networking.semesterProject.Server.ServerInterface;
 
-import java.awt.FlowLayout;
-import javax.swing.GroupLayout;
-import javax.swing.GroupLayout.Alignment;
-import javax.swing.LayoutStyle.ComponentPlacement;
-
-import net.miginfocom.swing.MigLayout;
-import javax.swing.BoxLayout;
 import java.awt.GridBagLayout;
 import java.awt.GridBagConstraints;
 import java.awt.Insets;
-import javax.swing.JInternalFrame;
-import javax.swing.JScrollPane;
-import javax.swing.JDesktopPane;
 
 public class LoginWindow {
 	
@@ -53,6 +39,7 @@ public class LoginWindow {
 	 */
 	public static void main(String[] args) {
 		EventQueue.invokeLater(new Runnable() {
+			@Override
 			public void run() {
 				try {
 					Class.forName("com.mysql.jdbc.Driver").newInstance();
@@ -140,6 +127,7 @@ public class LoginWindow {
 																								
 																								
 														loginButton.addActionListener(new ActionListener() {
+															@Override
 															public void actionPerformed(ActionEvent arg0) {
 																
 																loginButton.setEnabled(false);
@@ -196,6 +184,7 @@ public class LoginWindow {
 												final JButton stopServerButton = new JButton("Stop Server");
 												final JButton startServerButton = new JButton("Start Server");
 												startServerButton.addActionListener(new ActionListener() {
+													@Override
 													public void actionPerformed(ActionEvent arg0) {
 																							
 														serverHelper = new ServerHelper();
@@ -226,6 +215,7 @@ public class LoginWindow {
 												
 												stopServerButton.setEnabled(false);
 												stopServerButton.addActionListener(new ActionListener() {
+													@Override
 													public void actionPerformed(ActionEvent arg0) {
 														
 														try {
@@ -265,6 +255,7 @@ public class LoginWindow {
 		JMenuItem mntmAdmin = new JMenuItem("Admin"); // Checks to see if user
 														// is admin
 		mntmAdmin.addActionListener(new ActionListener() {
+			@Override
 			public void actionPerformed(ActionEvent e) {
 
 				AdminDialog dialog = new AdminDialog();

@@ -1,6 +1,7 @@
 package com.networking.semesterProject;
 
 import java.io.Serializable;
+import java.time.Instant;
 import java.util.List;
 
 public class Message implements Serializable
@@ -16,11 +17,14 @@ public class Message implements Serializable
 	
 	public String message;
 	
-	public Message(Type type, Integer source, List<Integer> destination, String message)
+	public Instant timestamp;
+	
+	public Message(Type type, Integer source, List<Integer> destination, String message, Instant timestamp)
 	{
 		this.type = type;
 		this.source = source;
 		this.destination = destination;
 		this.message = message;
+		this.timestamp = timestamp;
 	}
 }
