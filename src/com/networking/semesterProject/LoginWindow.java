@@ -9,6 +9,7 @@ import javax.swing.JButton;
 import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.net.Socket;
+import java.util.AbstractMap;
 import java.awt.event.ActionEvent;
 
 import javax.swing.JMenuBar;
@@ -155,18 +156,18 @@ public class LoginWindow {
 																	}
 
 																	@Override
-																	public void OnDisconnected() {
+																	public void OnDisconnected(String message) {
 																		// TODO Auto-generated method stub
 																		
 																		if(!isFailed)
 																		{
-																			ErrorDialog dialog = new ErrorDialog("Disconnected From Server...");
+																			ErrorDialog dialog = new ErrorDialog(message);
 	
 																			dialog.showDialog();
 																			
 																			loginButton.setEnabled(true);
 																		}
-																	}});	
+																	}}, new AbstractMap.SimpleEntry<String, String>(textField_1.getText(), textField.getText()));	
 																
 																clientHelper.Start();
 															}

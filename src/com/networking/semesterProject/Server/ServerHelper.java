@@ -25,6 +25,8 @@ public class ServerHelper implements Runnable {
 	}
 
 	ServerSocket welcomeSocket;
+	
+	public enum MessageType {Send, Receive}
 
 	@Override
 	public void run() {
@@ -52,16 +54,16 @@ public class ServerHelper implements Runnable {
 			statement.executeUpdate(createMessageTable);
 
 			String createUserTable = "CREATE TABLE if not exists UserTable ("
-					+ "userID INT(64) NOT NULL AUTO_INCREMENT," + "userFirstName VARCHAR(25) NULL, "
+					+ "userID INT(64) NOT NULL AUTO_INCREMENT, " + "userName VARCHAR(25) NOT NULL, " + "userPassword VARCHAR(25) NOT NULL, " + "userFirstName VARCHAR(25) NULL, "
 					+ "userLastName VARCHAR(25) NULL, " + "PRIMARY KEY(userID))";
 
 			statement.executeUpdate(createUserTable);
 
-			String createMessageTypeTable = "CREATE TABLE if not exists MessageTypeTable ("
+			/*String createMessageTypeTable = "CREATE TABLE if not exists MessageTypeTable ("
 					+ "messageTypeID INT(64) NOT NULL AUTO_INCREMENT," + "messageTypeName VARCHAR(25) NULL, "
 					+ "PRIMARY KEY(messageTypeID))";
 
-			statement.executeUpdate(createMessageTypeTable);
+			statement.executeUpdate(createMessageTypeTable);*/
 
 			String createMessageToUserTable = "CREATE TABLE if not exists MessageToUserTable ("
 					+ "messageToUserID INT(64) NOT NULL AUTO_INCREMENT," + "userID INT(64) NOT NULL,"
@@ -74,7 +76,7 @@ public class ServerHelper implements Runnable {
 			//		+ " SELECT ('Send'), ('Receive')" + " WHERE 0 = (SELECT COUNT(*) FROM MessageTypeTable );";
 			
 			
-			String insertDefaultMessageTypes = "INSERT INTO MessageTypeTable (messageTypeName)"
+			/*String insertDefaultMessageTypes = "INSERT INTO MessageTypeTable (messageTypeName)"
 		    + " select t.*"
 		    + " from ((SELECT 'Send' as messageTypeName"
 		          + ") union all"
@@ -82,7 +84,7 @@ public class ServerHelper implements Runnable {
 		         + ") t"
 		    + " WHERE NOT EXISTS (SELECT * FROM MessageTypeTable)";
 
-			statement.executeUpdate(insertDefaultMessageTypes);
+			statement.executeUpdate(insertDefaultMessageTypes);*/
 			
 			statement.close();
 			
@@ -92,27 +94,6 @@ public class ServerHelper implements Runnable {
 
 			while (!welcomeSocket.isClosed()) {
 				Socket connectionSocket = welcomeSocket.accept();
-
-				// connectionSocket.
-
-				ObjectOutputStream outToServer = new ObjectOutputStream(connectionSocket.getOutputStream());
-
-				// ObjectInputStream inFromServer = new
-				// ObjectInputStream(connectionSocket.getInputStream());
-
-				// BufferedReader inFromClient = new BufferedReader(
-				// new InputStreamReader(connectionSocket.getInputStream()));
-
-				// DataOutputStream outToClient = new
-				// DataOutputStream(connectionSocket.getOutputStream());
-
-				// clientSentence = inFromClient.readLine();
-
-				// capitalizedSentence = clientSentence.toUpperCase() + '\n';
-				// outToClient.writeBytes("Welcome!");
-				outToServer.writeObject(new Message(Type.Init, socketList.size(), null, "Welcome!", null));
-
-				// outToServer.close();
 
 				MessageHelper messageHelper = new MessageHelper(stopped, socketList.size(), socketList);
 				messageHelper.Start(connectionSocket);
@@ -127,7 +108,6 @@ public class ServerHelper implements Runnable {
 			e.printStackTrace();
 		} finally {
 			try {
-
 				//if (statement != null)
 				//	statement.close();
 
@@ -143,6 +123,8 @@ public class ServerHelper implements Runnable {
 
 				// if(!welcomeSocket.isClosed())
 				welcomeSocket.close();
+				
+				
 
 			} catch (IOException e1) {
 				// TODO Auto-generated catch block
