@@ -48,14 +48,14 @@ public class ServerHelper implements Runnable {
 			statement = conn.createStatement();
 
 			String createMessageTable = "CREATE TABLE if not exists MessageTable ("
-					+ "messageID INT(64) NOT NULL AUTO_INCREMENT," + "messageText VARCHAR(500) NULL, "
-					+ "messageTS TIMESTAMP NULL," + "PRIMARY KEY(messageID))";
+					+ "messageID INT(64) NOT NULL AUTO_INCREMENT, " + "messageText VARCHAR(500) NULL, "
+					+ "messageTS TIMESTAMP NULL, " + "PRIMARY KEY(messageID))";
 
 			statement.executeUpdate(createMessageTable);
 
 			String createUserTable = "CREATE TABLE if not exists UserTable ("
 					+ "userID INT(64) NOT NULL AUTO_INCREMENT, " + "userName VARCHAR(25) NOT NULL, " + "userPassword VARCHAR(25) NOT NULL, " + "userFirstName VARCHAR(25) NULL, "
-					+ "userLastName VARCHAR(25) NULL, " + "PRIMARY KEY(userID))";
+					+ "userLastName VARCHAR(25) NULL, " + "loggedIn BOOLEAN NULL, " + "PRIMARY KEY(userID))";
 
 			statement.executeUpdate(createUserTable);
 
