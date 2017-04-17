@@ -36,7 +36,6 @@ public class MessageHelper implements Runnable {
 	
 	
 	private AbstractMap.SimpleEntry<Socket, User> messageInfo = null;
-
 	//private Integer userID = null;
 	//private User userInfo = null;
 
@@ -257,7 +256,7 @@ public class MessageHelper implements Runnable {
 		} finally {
 			
 			if(messageInfo != null)
-				socketList.remove(messageInfo);
+				socketList.remove(messageInfo.getValue().id);
 			
 			try {
 				// if(!welcomeSocket.isClosed())
