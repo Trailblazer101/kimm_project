@@ -7,9 +7,11 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.*;
+import java.util.AbstractMap.SimpleEntry;
 
 import com.networking.semesterProject.Message;
 import com.networking.semesterProject.Message.Type;
+import com.networking.semesterProject.User;
 
 public class ServerHelper implements Runnable {
 
@@ -27,11 +29,13 @@ public class ServerHelper implements Runnable {
 	ServerSocket welcomeSocket;
 	
 	public enum MessageType {Send, Receive}
+	
+	//private List<MessageHelper> socketList = new ArrayList<MessageHelper>();
 
+	private Map<Integer, SimpleEntry<Socket, User>> socketList = new HashMap<Integer, SimpleEntry<Socket, User>>();
+	
 	@Override
 	public void run() {
-
-		List<MessageHelper> socketList = new ArrayList<MessageHelper>();
 
 		Connection conn = null;
 		Statement statement = null;
@@ -66,9 +70,10 @@ public class ServerHelper implements Runnable {
 			statement.executeUpdate(createMessageTypeTable);*/
 
 			String createMessageToUserTable = "CREATE TABLE if not exists MessageToUserTable ("
-					+ "messageToUserID INT(64) NOT NULL AUTO_INCREMENT," + "userID INT(64) NOT NULL,"
-					+ "messageID INT(64) NOT NULL," + "messageTypeID INT(64) NOT NULL,"
-					+ "PRIMARY KEY(messageToUserID))";
+					+ "messageToUserID INT(64) NOT NULL AUTO_INCREMENT, " + "userID INT(64) NOT NULL, "
+					+ "messageID INT(64) NOT NULL, " + "messageTypeID INT(64) NOT NULL, "
+					+ "PRIMARY KEY(messageToUserID), " + "CONSTRAINT FK_MToU_UserID FOREIGN KEY (userID) REFERENCES UserTable(userID), "
+					+ "CONSTRAINT FK_MToU_MessageID FOREIGN KEY (messageID) REFERENCES MessageTable(messageID)" + ")";
 
 			statement.executeUpdate(createMessageToUserTable);
 
@@ -95,12 +100,15 @@ public class ServerHelper implements Runnable {
 			while (!welcomeSocket.isClosed()) {
 				Socket connectionSocket = welcomeSocket.accept();
 
-				MessageHelper messageHelper = new MessageHelper(stopped, socketList.size(), socketList);
+				MessageHelper messageHelper = new MessageHelper(socketList);
 				messageHelper.Start(connectionSocket);
 
-				socketList.add(messageHelper);
+				//socketList.add(messageHelper);
+				//ADD IN MESSAGE HELPER!!!
 			}
 
+		} catch (SocketException ex) {
+			ex.printStackTrace();
 		} catch (SQLException ex) {
 			ex.printStackTrace();
 		} catch (IOException e) {
@@ -111,10 +119,10 @@ public class ServerHelper implements Runnable {
 				//if (statement != null)
 				//	statement.close();
 
-				for (MessageHelper messageHelper : socketList) {
+				for (SimpleEntry<Socket, User> messageHelper : socketList.values()) {
 
 					ObjectOutputStream outToServer = new ObjectOutputStream(
-							messageHelper.clientSocket.getOutputStream());
+							messageHelper.getKey().getOutputStream());
 
 					outToServer
 							.writeObject(new Message(Type.Disconnect, null, null, "Server Asked You To Leave!", null));
@@ -124,8 +132,6 @@ public class ServerHelper implements Runnable {
 				// if(!welcomeSocket.isClosed())
 				welcomeSocket.close();
 				
-				
-
 			} catch (IOException e1) {
 				// TODO Auto-generated catch block
 				e1.printStackTrace();

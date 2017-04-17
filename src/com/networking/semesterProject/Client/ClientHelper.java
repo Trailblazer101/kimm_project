@@ -1,88 +1,96 @@
 package com.networking.semesterProject.Client;
 
-import java.io.*;
-import java.net.*;
-import java.time.Instant;
-import java.util.AbstractMap;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.net.Socket;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.List;
 
-import com.networking.semesterProject.LoginWindow;
 import com.networking.semesterProject.Message;
 import com.networking.semesterProject.Message.Type;
 
 public class ClientHelper implements Runnable {
 
-	//String sentence = null;
-	//String modifiedSentence = null;
-	// BufferedReader inFromUser = new BufferedReader(new
-	// InputStreamReader(System.in));
-	
-	private ClientInterface client = null;
-	private AbstractMap.SimpleEntry<String, String> usernamePassword = null;
-	
-	public ClientHelper(ClientInterface clien, AbstractMap.SimpleEntry<String, String> usernamePassword)
-	{
-		client = clien;
-		this.usernamePassword = usernamePassword;
+	private Socket clientSocket;
+	private ClientInterface inter;
+
+	public ClientHelper(ClientInterface inter, Socket clientSocket) {
+		this.clientSocket = clientSocket;
+		this.inter = inter;
 	}
 
 	@Override
 	public void run() {
-		Socket clientSocket = null;
+
 		try {
-			clientSocket = new Socket("localhost", 9000);
+			// BufferedReader inFromServer = new BufferedReader(new
+			// InputStreamReader(clientSocket.getInputStream()));
 
-			/*DataOutputStream outToServer = new DataOutputStream(clientSocket.getOutputStream());
-			BufferedReader inFromServer = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
+			while (!clientSocket.isClosed()) {
+				ObjectInputStream inFromServer = new ObjectInputStream(clientSocket.getInputStream());
 
-			sentence = "butttttttts"; // inFromUser.readLine();
+				// BufferedReader inFromServer = new BufferedReader(new
+				// InputStreamReader(clientSocket.getInputStream()));
 
-			outToServer.writeBytes(sentence + '\n');
+				Object msgObject = inFromServer.readObject();
 
-			modifiedSentence = inFromServer.readLine();
+				if (msgObject instanceof Message) {
+					Message message = (Message) msgObject;
+					if (message.type == Type.Send) {
+						ZoneId zoneId = ZoneId.of("America/New_York");
+						ZonedDateTime zdt = ZonedDateTime.ofInstant(message.timestamp, zoneId);
 
-			System.out.println(modifiedSentence);
+						DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM/dd/uuuu HH:mm");
 
-			clientSocket.close();*/
-			
-			ObjectOutputStream outToServer = new ObjectOutputStream(clientSocket.getOutputStream());
-			outToServer.writeObject(new Message(Type.Init, null, null, usernamePassword.getKey() + ":" + usernamePassword.getValue(), Instant.now()));
-			
-			ObjectInputStream inFromServer = new
-			ObjectInputStream(clientSocket.getInputStream());
-			
-			Message message = (Message)inFromServer.readObject();
-			if(message.type == Type.Disconnect)
-				client.OnDisconnected(message.message);
-			else
-				client.OnConnected(clientSocket, message);
-			
-		} catch (IOException e1) {			
+						message.message = message.source.userName + " (" + zdt.format(formatter) + "): "
+								+ message.message + "\n";
+
+						inter.OnConnected(clientSocket, message);
+
+						// textArea.append();
+					} else if (message.type == Type.Disconnect) {
+						// textArea.setText("Disconnected With Message:\n\t" +
+						// message.message + "\n");
+						clientSocket.close();
+
+						inter.OnDisconnected("Disconnected With Message:\n\t" + message.message + "\n");
+					}
+				} else if(msgObject instanceof List<?>)
+				{
+					List<Message> messageList = (List<Message>)msgObject;
+					
+					ZoneId zoneId = ZoneId.of("America/New_York");
+					
+					for(Message message : messageList)
+					{	
+						ZonedDateTime zdt = ZonedDateTime.ofInstant(message.timestamp, zoneId);
+
+						DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM/dd/uuuu HH:mm");
+
+						message.message = message.source.userName + " (" + zdt.format(formatter) + "): "
+								+ message.message + "\n";
+
+						inter.OnConnected(clientSocket, message);	
+					}
+				}
+
+				// inFromServer.close();
+			}
+
+		} catch (IOException e) {
 			// TODO Auto-generated catch block
-			e1.printStackTrace();
-			
-			client.OnFailed();
+			e.printStackTrace();
 		} catch (ClassNotFoundException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-			
-			client.OnFailed();
-		} finally 
-		{
-			/*try {
-				if(clientSocket != null)
-					clientSocket.close();
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			
-			client.OnDisconnected();*/
 		}
 	}
-	
-public void Start() {
-		
-		//stopped = stopCallback;
+
+	public void Start() {
+
+		// stopped = stopCallback;
 		new Thread(this).start();
 	}
 }

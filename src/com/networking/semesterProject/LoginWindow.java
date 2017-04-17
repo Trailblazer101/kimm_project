@@ -18,7 +18,7 @@ import javax.swing.JMenuItem;
 
 import java.awt.CardLayout;
 import javax.swing.JPanel;
-import com.networking.semesterProject.Client.ClientHelper;
+import com.networking.semesterProject.Client.LoginHelper;
 import com.networking.semesterProject.Client.ClientInterface;
 import com.networking.semesterProject.Client.ClientWindow;
 import com.networking.semesterProject.Server.ServerHelper;
@@ -133,7 +133,7 @@ public class LoginWindow {
 																
 																loginButton.setEnabled(false);
 
-																ClientHelper clientHelper = new ClientHelper(new ClientInterface(){
+																LoginHelper clientHelper = new LoginHelper(new ClientInterface(){
 
 																	Boolean isFailed = false;
 																	@Override

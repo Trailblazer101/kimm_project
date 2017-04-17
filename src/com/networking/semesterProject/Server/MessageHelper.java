@@ -10,9 +10,11 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Timestamp;
 import java.util.*;
+import java.util.AbstractMap.SimpleEntry;
 
 import com.networking.semesterProject.Message;
 import com.networking.semesterProject.Message.Type;
+import com.networking.semesterProject.User;
 
 public class MessageHelper implements Runnable {
 
@@ -20,24 +22,30 @@ public class MessageHelper implements Runnable {
 	// String capitalizedSentence;
 	// ServerSocket welcomeSocket;
 
-	private ServerInterface stopped = null;
+	// private ServerInterface stopped = null;
 
-	private List<MessageHelper> socketList;
-
-	public MessageHelper(ServerInterface stop, Integer i, List<MessageHelper> list) {
-		stopped = stop;
-		id = i;
+	//private List<MessageHelper> socketList;
+	private Map<Integer, AbstractMap.SimpleEntry<Socket, User>> socketList = new HashMap<Integer, AbstractMap.SimpleEntry<Socket, User>>();
+	
+	
+	public MessageHelper(Map<Integer, AbstractMap.SimpleEntry<Socket, User>> list) {
+		// stopped = stop;
+		// id = i;
 		socketList = list;
 	}
+	
+	
+	private AbstractMap.SimpleEntry<Socket, User> messageInfo = null;
 
-	private Integer id;
+	//private Integer userID = null;
+	//private User userInfo = null;
 
 	public void Stop() throws IOException {
 		// stopped = stopCallback;
 		clientSocket.close();
 	}
 
-	public Socket clientSocket;
+	private Socket clientSocket;
 
 	@Override
 	public void run() {
@@ -60,18 +68,24 @@ public class MessageHelper implements Runnable {
 				// inFromServer.close();
 
 				if (message.type == Message.Type.Send) {
-					// List<Integer> pushToTable = new ArrayList<Integer>();
+					List<Integer> pushToTable = new ArrayList<Integer>();
 
-					for (MessageHelper messageHelper : socketList) {
-						if (!message.source.equals(messageHelper.id)
-								&& (message.destination == null || message.destination.contains(messageHelper.id))) {
+					
+					
+					for (SimpleEntry<Socket, User> messageHelper : socketList.values()) {
+						
+						Integer id = messageHelper.getValue().id;
+						
+						if (!message.source.id.equals(id) && (message.destination == null
+								|| message.destination.containsKey(id))) {
 							ObjectOutputStream outToServer = new ObjectOutputStream(
-									messageHelper.clientSocket.getOutputStream());
+									messageHelper.getKey().getOutputStream());
 
 							// maybe clean message up before send?
+							
 							outToServer.writeObject(message);
 
-							// pushToTable.add(messageHelper.id);
+							pushToTable.add(id);
 							// DataOutputStream outToClient = new
 							// DataOutputStream(messageHelper.clientSocket.getOutputStream());
 							// outToClient.writeBytes(message.message);
@@ -107,15 +121,15 @@ public class MessageHelper implements Runnable {
 						preparedStatement = conn.prepareStatement(
 								"INSERT INTO MessageToUserTable(userID, messageID, messageTypeID) VALUES(?,?,?)");
 
-						preparedStatement.setInt(1, message.source);
+						preparedStatement.setInt(1, message.source.id);
 						preparedStatement.setInt(2, messageID);
 						preparedStatement.setInt(3, ServerHelper.MessageType.Send.ordinal());
 
 						preparedStatement.addBatch();
 
-						int i = 1;
+						int i = 0;
 
-						for (Integer dest : message.destination) {
+						for (Integer dest : pushToTable) { //message.destination) {
 							preparedStatement.setInt(1, dest);
 							preparedStatement.setInt(2, messageID);
 							preparedStatement.setInt(3, ServerHelper.MessageType.Receive.ordinal());
@@ -124,7 +138,7 @@ public class MessageHelper implements Runnable {
 
 							i++;
 
-							if (i % 1000 == 0 || i == message.destination.size()) {
+							if (i % 1000 == 0 || i == pushToTable.size()) {
 								preparedStatement.executeBatch();
 							}
 						}
@@ -133,6 +147,8 @@ public class MessageHelper implements Runnable {
 
 					} catch (SQLException ex) {
 						ex.printStackTrace();
+						
+						break;
 					} finally {
 						try {
 							preparedStatement.close();
@@ -148,16 +164,16 @@ public class MessageHelper implements Runnable {
 					Connection conn = null;
 					PreparedStatement preparedStatement = null;
 
-					String[] userNamePassword = message.message.split(":", 2);
+					//String[] userNamePassword = message.message.split(":", 2);
 
 					try {
 						conn = DriverManager
 								.getConnection("jdbc:mysql://localhost/networkProject?user=root&password=tst12368");
 						preparedStatement = conn.prepareStatement(
-								"SELECT userID, loggedIn FROM UserTable WHERE userName = ? AND userPassword = ?");
+								"SELECT * FROM UserTable WHERE userName = ? AND userPassword = ?");
 
-						preparedStatement.setString(1, userNamePassword[0]);
-						preparedStatement.setString(2, userNamePassword[1]);
+						preparedStatement.setString(1, message.source.userName);//userNamePassword[0]);
+						preparedStatement.setString(2, message.source.userPassword);//userNamePassword[1]);
 
 						ResultSet resultSet = preparedStatement.executeQuery();
 
@@ -168,32 +184,46 @@ public class MessageHelper implements Runnable {
 
 						if (resultSet.next()) {
 
-							int userID = resultSet.getInt(1);
-							boolean loggedIn = resultSet.getBoolean(2);
+							Integer userID = resultSet.getInt(1);
+
+							boolean loggedIn = resultSet.getBoolean(6);
+							
+							User userInfo = new User(userID, resultSet.getString(2), resultSet.getString(4), resultSet.getString(5));
 
 							preparedStatement.close();
 
-							if (loggedIn)
+							if (loggedIn) {
 								outToServer.writeObject(new Message(Type.Disconnect, null, null,
 										"You Are Already Logged In, Please Disconnect First!", null));
-							else {
-								outToServer.writeObject(new Message(Type.Init, userID, null, "Welcome!", null));
+
+								break;
+							} else {
+		
+								outToServer.writeObject(new Message(Type.Init, userInfo, null, "Welcome!", null));
 
 								preparedStatement = conn
 										.prepareStatement("UPDATE UserTable SET loggedIn = true WHERE userID = ?");
-								preparedStatement.setInt(1, userID);
+								preparedStatement.setInt(1, userInfo.id);
 
 								preparedStatement.executeUpdate();
 
 								preparedStatement.close();
+								
+								messageInfo = new AbstractMap.SimpleEntry<Socket, User>(clientSocket, userInfo);
+								
+								socketList.put(userID, messageInfo);
 							}
 						} else {
 							outToServer.writeObject(new Message(Type.Disconnect, null, null,
 									"Couldn't Authenticate, Please Check Your Username and Password!", null));
+
+							break;
 						}
 
 					} catch (SQLException ex) {
 						ex.printStackTrace();
+						
+						break;
 					} finally {
 						try {
 							preparedStatement.close();
@@ -225,6 +255,10 @@ public class MessageHelper implements Runnable {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} finally {
+			
+			if(messageInfo != null)
+				socketList.remove(messageInfo);
+			
 			try {
 				// if(!welcomeSocket.isClosed())
 
@@ -235,7 +269,35 @@ public class MessageHelper implements Runnable {
 				e1.printStackTrace();
 			}
 
-			stopped.OnStopped();
+			if (messageInfo != null) {
+				Connection conn = null;
+				PreparedStatement preparedStatement = null;
+
+				try {
+					conn = DriverManager
+							.getConnection("jdbc:mysql://localhost/networkProject?user=root&password=tst12368");
+
+					preparedStatement = conn.prepareStatement("UPDATE UserTable SET loggedIn = false WHERE userID = ?");
+					preparedStatement.setInt(1, messageInfo.getValue().id);
+
+					preparedStatement.executeUpdate();
+
+					preparedStatement.close();
+
+				} catch (SQLException ex) {
+					ex.printStackTrace();
+				} finally {
+					try {
+						preparedStatement.close();
+						conn.close();
+					} catch (SQLException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+				}
+			}
+
+			// stopped.OnStopped();
 		}
 	}
 

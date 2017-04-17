@@ -25,10 +25,11 @@ import java.awt.event.ActionEvent;
 public class ChatPanel extends JPanel {
 	private JTextField textField;
 	private JTextArea textArea;
+	private JButton btnNewButton;
 	/**
 	 * Create the panel.
 	 */
-	
+	//CHANGE TEXT AREA TO TABLE, SO THAT WE CAN SORT BY TIME, AND DYNAMICALLY ADD ITEMS TO TOP OF IT! 
 	private Socket clientSocket;
 	
 	public ChatPanel(Socket clien, Message message)
@@ -42,52 +43,29 @@ public class ChatPanel extends JPanel {
 		
 		clientSocket = clien;
 		
-		new Thread(new Runnable(){
+		ClientHelper clientHelper = new ClientHelper(new ClientInterface(){
 
 			@Override
-			public void run() {
+			public void OnConnected(Socket clientSocket, Message message) {
+				// TODO Auto-generated method stub
+				textArea.append(message.message);
+			}
+
+			@Override
+			public void OnFailed() {
 				// TODO Auto-generated method stub
 				
-				try {
-					
-					//BufferedReader inFromServer = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
-					
-					
-					while(!clientSocket.isClosed())
-					{
-						ObjectInputStream inFromServer = new
-								ObjectInputStream(clientSocket.getInputStream());
-						
-						//BufferedReader inFromServer = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
+			}
 
-						Message message = (Message)inFromServer.readObject();
-						
-						if(message.type == Type.Send)
-						{
-							ZoneId zoneId = ZoneId.of( "America/New_York" );
-							ZonedDateTime zdt = ZonedDateTime.ofInstant( message.timestamp , zoneId );
-											
-							DateTimeFormatter formatter = DateTimeFormatter.ofPattern( "uuuu.MM.dd.HH.mm.ss" );
-
-							textArea.append(zdt.format(formatter) + ": " + message.message + "\n");	
-						}
-						else if(message.type == Type.Disconnect)
-						{
-							textArea.setText("Disconnected With Message:\n\t" + message.message + "\n");
-							clientSocket.close();
-						}
-						
-						//inFromServer.close();
-					}
-					
-				} catch (IOException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				} catch (ClassNotFoundException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-			}}).start();
+			@Override
+			public void OnDisconnected(String message) {
+				// TODO Auto-generated method stub
+				textArea.setText(message);
+				
+				btnNewButton.setEnabled(false);
+			}}, clien);
+		
+		clientHelper.Start();
 	}
 	
 	public void initialize(final Message message) {
@@ -115,7 +93,7 @@ public class ChatPanel extends JPanel {
 		panel.add(textField, gbc_textField);
 		textField.setColumns(10);
 		
-		JButton btnNewButton = new JButton("Submit");
+		btnNewButton = new JButton("Submit");
 		btnNewButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				
@@ -128,12 +106,16 @@ public class ChatPanel extends JPanel {
 					ZoneId zoneId = ZoneId.of( "America/New_York" );
 					ZonedDateTime zdt = ZonedDateTime.ofInstant( instant , zoneId );
 									
-					DateTimeFormatter formatter = DateTimeFormatter.ofPattern( "uuuu.MM.dd.HH.mm.ss" );
+					DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM/dd/uuuu HH:mm");
 
-					textArea.append(zdt.format(formatter) + ": " + gotMessage + "\n");	
-							
+					//textArea.append(zdt.format(formatter) + ": " + gotMessage + "\n");	
+					textArea.append(message.source.userName + " (" + zdt.format(formatter) + "): " + gotMessage + "\n");	
+					
 					MessageHelper messageHelper = new MessageHelper();
 					messageHelper.Start(clientSocket, new Message(Type.Send, message.source, null, gotMessage, instant));
+					
+					
+					textField.setText("");
 				}
 			}
 		});
