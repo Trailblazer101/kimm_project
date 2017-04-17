@@ -50,18 +50,20 @@ public class ServerHelper implements Runnable {
 			conn.setCatalog("networkProject");
 
 			statement = conn.createStatement();
-
-			String createMessageTable = "CREATE TABLE if not exists MessageTable ("
-					+ "messageID INT(64) NOT NULL AUTO_INCREMENT, " + "messageText VARCHAR(500) NULL, "
-					+ "messageTS TIMESTAMP NULL, " + "PRIMARY KEY(messageID))";
-
-			statement.executeUpdate(createMessageTable);
-
+			
 			String createUserTable = "CREATE TABLE if not exists UserTable ("
 					+ "userID INT(64) NOT NULL AUTO_INCREMENT, " + "userName VARCHAR(25) NOT NULL, " + "userPassword VARCHAR(25) NOT NULL, " + "userFirstName VARCHAR(25) NULL, "
 					+ "userLastName VARCHAR(25) NULL, " + "loggedIn BOOLEAN NULL, " + "PRIMARY KEY(userID))";
 
 			statement.executeUpdate(createUserTable);
+
+			String createMessageTable = "CREATE TABLE if not exists MessageTable ("
+					+ "messageID INT(64) NOT NULL AUTO_INCREMENT, " + "userID INT(64) NOT NULL, " + "messageText VARCHAR(500) NULL, "
+					+ "messageTS TIMESTAMP NULL, " + "PRIMARY KEY(messageID), "
+					+ "CONSTRAINT FK_Message_UserID FOREIGN KEY (userID) REFERENCES UserTable(userID)"
+					+ ")";
+
+			statement.executeUpdate(createMessageTable);
 
 			/*String createMessageTypeTable = "CREATE TABLE if not exists MessageTypeTable ("
 					+ "messageTypeID INT(64) NOT NULL AUTO_INCREMENT," + "messageTypeName VARCHAR(25) NULL, "
@@ -71,7 +73,7 @@ public class ServerHelper implements Runnable {
 
 			String createMessageToUserTable = "CREATE TABLE if not exists MessageToUserTable ("
 					+ "messageToUserID INT(64) NOT NULL AUTO_INCREMENT, " + "userID INT(64) NOT NULL, "
-					+ "messageID INT(64) NOT NULL, " + "messageTypeID INT(64) NOT NULL, "
+					+ "messageID INT(64) NOT NULL, "
 					+ "PRIMARY KEY(messageToUserID), " + "CONSTRAINT FK_MToU_UserID FOREIGN KEY (userID) REFERENCES UserTable(userID), "
 					+ "CONSTRAINT FK_MToU_MessageID FOREIGN KEY (messageID) REFERENCES MessageTable(messageID)" + ")";
 
@@ -126,7 +128,8 @@ public class ServerHelper implements Runnable {
 
 					outToServer
 							.writeObject(new Message(Type.Disconnect, null, null, "Server Asked You To Leave!", null));
-					// messageHelper.clientSocket.close();
+				
+					//messageHelper.getKey().close();
 				} // REPLACE WITH CLOSE FROM CLIENT SIDE, TO BE NICE!
 
 				// if(!welcomeSocket.isClosed())

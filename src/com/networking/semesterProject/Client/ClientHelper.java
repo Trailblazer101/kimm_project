@@ -39,13 +39,13 @@ public class ClientHelper implements Runnable {
 				if (msgObject instanceof Message) {
 					Message message = (Message) msgObject;
 					if (message.type == Type.Send) {
-						ZoneId zoneId = ZoneId.of("America/New_York");
+						/*ZoneId zoneId = ZoneId.of("America/New_York");
 						ZonedDateTime zdt = ZonedDateTime.ofInstant(message.timestamp, zoneId);
 
 						DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM/dd/uuuu HH:mm");
 
 						message.message = message.source.userName + " (" + zdt.format(formatter) + "): "
-								+ message.message + "\n";
+								+ message.message + "\n";*/
 
 						inter.OnConnected(clientSocket, message);
 
@@ -55,7 +55,7 @@ public class ClientHelper implements Runnable {
 						// message.message + "\n");
 						clientSocket.close();
 
-						inter.OnDisconnected("Disconnected With Message:\n\t" + message.message + "\n");
+						inter.OnDisconnected(message);
 					}
 				} else if(msgObject instanceof List<?>)
 				{

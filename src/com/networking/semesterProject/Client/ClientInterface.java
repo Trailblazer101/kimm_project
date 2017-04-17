@@ -8,5 +8,5 @@ public interface ClientInterface
 {
 	public void OnConnected(Socket clientSocket, Message message);
 	public void OnFailed();
-	public void OnDisconnected(String message);
+	public void OnDisconnected(Message message);
 }

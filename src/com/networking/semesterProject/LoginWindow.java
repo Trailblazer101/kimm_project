@@ -23,6 +23,7 @@ import com.networking.semesterProject.Client.ClientInterface;
 import com.networking.semesterProject.Client.ClientWindow;
 import com.networking.semesterProject.Server.ServerHelper;
 import com.networking.semesterProject.Server.ServerInterface;
+import com.networking.semesterProject.Server.UserManager;
 
 import java.awt.GridBagLayout;
 import java.awt.GridBagConstraints;
@@ -156,12 +157,12 @@ public class LoginWindow {
 																	}
 
 																	@Override
-																	public void OnDisconnected(String message) {
+																	public void OnDisconnected(Message message) {
 																		// TODO Auto-generated method stub
 																		
 																		if(!isFailed)
 																		{
-																			ErrorDialog dialog = new ErrorDialog(message);
+																			ErrorDialog dialog = new ErrorDialog(message.message);
 	
 																			dialog.showDialog();
 																			
@@ -246,6 +247,18 @@ public class LoginWindow {
 
 		JMenu mnFile = new JMenu("File");
 		menuBar.add(mnFile);
+		
+		final JMenuItem mntmManageUsers = new JMenuItem("Manage Users");
+		mntmManageUsers.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				
+				UserManager userManager = new UserManager();
+				userManager.Show();
+			}
+		});
+		
+		mntmManageUsers.setVisible(false);
+		mnFile.add(mntmManageUsers);
 
 		JMenu mnHelp = new JMenu("Help");
 		menuBar.add(mnHelp);
@@ -266,6 +279,7 @@ public class LoginWindow {
 				if (isAdmin) {
 					//btnNewButton.setText("Start Server");
 					cardLayout.next(frame.getContentPane());
+					mntmManageUsers.setVisible(true);
 				}
 			}
 

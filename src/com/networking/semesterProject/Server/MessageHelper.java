@@ -9,12 +9,15 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Timestamp;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.AbstractMap.SimpleEntry;
 
 import com.networking.semesterProject.Message;
 import com.networking.semesterProject.Message.Type;
 import com.networking.semesterProject.User;
+import com.networking.semesterProject.Client.BatchMessageHelper;
 
 public class MessageHelper implements Runnable {
 
@@ -68,9 +71,7 @@ public class MessageHelper implements Runnable {
 
 				if (message.type == Message.Type.Send) {
 					List<Integer> pushToTable = new ArrayList<Integer>();
-
-					
-					
+			
 					for (SimpleEntry<Socket, User> messageHelper : socketList.values()) {
 						
 						Integer id = messageHelper.getValue().id;
@@ -99,12 +100,15 @@ public class MessageHelper implements Runnable {
 						conn = DriverManager.getConnection(
 								"jdbc:mysql://localhost/networkProject?user=root&password=tst12368&rewriteBatchedStatements=true");
 						preparedStatement = conn.prepareStatement(
-								"INSERT INTO MessageTable(messageText, messageTS) VALUES(?,?)",
+								"INSERT INTO MessageTable(userID, messageText, messageTS) VALUES(?,?,?)",
 								Statement.RETURN_GENERATED_KEYS);
 
-						preparedStatement.setString(1, message.message);
+						preparedStatement.setInt(1, message.source.id);
+						preparedStatement.setString(2, message.message);
+						preparedStatement.setTimestamp(3, Timestamp.from(message.timestamp));
+						/*preparedStatement.setString(1, message.message);
 						preparedStatement.setTimestamp(2, Timestamp.from(message.timestamp));
-
+						 */
 						preparedStatement.executeUpdate();
 
 						int messageID = -1;
@@ -118,29 +122,32 @@ public class MessageHelper implements Runnable {
 						preparedStatement.close();
 
 						preparedStatement = conn.prepareStatement(
-								"INSERT INTO MessageToUserTable(userID, messageID, messageTypeID) VALUES(?,?,?)");
+								"INSERT INTO MessageToUserTable(userID, messageID) VALUES(?,?)");
 
-						preparedStatement.setInt(1, message.source.id);
+						/*preparedStatement.setInt(1, message.source.id);
 						preparedStatement.setInt(2, messageID);
 						preparedStatement.setInt(3, ServerHelper.MessageType.Send.ordinal());
 
-						preparedStatement.addBatch();
+						preparedStatement.addBatch();*/
 
 						int i = 0;
 
 						for (Integer dest : pushToTable) { //message.destination) {
 							preparedStatement.setInt(1, dest);
 							preparedStatement.setInt(2, messageID);
-							preparedStatement.setInt(3, ServerHelper.MessageType.Receive.ordinal());
+							//preparedStatement.setInt(3, ServerHelper.MessageType.Receive.ordinal());
 
 							preparedStatement.addBatch();
 
-							i++;
-
-							if (i % 1000 == 0 || i == pushToTable.size()) {
+							if (i == 1000) {
+								i = 0;
 								preparedStatement.executeBatch();
-							}
+							} else 
+								i++;
 						}
+						
+						if(i > 0)
+							preparedStatement.executeBatch();
 
 						preparedStatement.close();
 
@@ -211,6 +218,10 @@ public class MessageHelper implements Runnable {
 								messageInfo = new AbstractMap.SimpleEntry<Socket, User>(clientSocket, userInfo);
 								
 								socketList.put(userID, messageInfo);
+								
+								//BatchMessageHelper mesageHelper = new BatchMessageHelper(messageInfo);
+								
+								//mesageHelper.Start(Instant.now().minus(1, ChronoUnit.WEEKS));
 							}
 						} else {
 							outToServer.writeObject(new Message(Type.Disconnect, null, null,

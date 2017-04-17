@@ -53,7 +53,7 @@ public class LoginHelper implements Runnable {
 			
 			Message message = (Message)inFromServer.readObject();
 			if(message.type == Type.Disconnect)
-				client.OnDisconnected(message.message);
+				client.OnDisconnected(message);
 			else
 				client.OnConnected(clientSocket, message);
 			
