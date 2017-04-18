@@ -69,7 +69,7 @@ public class UserManager {
 	 */
 	private void initialize() {
 		frame = new JFrame();
-		frame.setBounds(100, 100, 459, 363);
+		frame.setBounds(100, 100, 537, 430);
 		frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 		frame.getContentPane().setLayout(new BorderLayout(0, 0));
 
@@ -252,6 +252,17 @@ public class UserManager {
 				frame.dispatchEvent(new WindowEvent(frame, WindowEvent.WINDOW_CLOSING));
 			}
 		});
+		
+		JButton button = new JButton("Schedule");
+		button.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				
+				FillSchedule sch = new FillSchedule();
+				sch.setVisible(true);
+				
+			}
+		});
+		panel.add(button);
 		panel.add(btnNewButton_1);
 
 		Connection conn = null;

@@ -4,11 +4,14 @@ import java.io.*;
 import java.net.*;
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.*;
 import java.util.AbstractMap.SimpleEntry;
 
+import com.networking.semesterProject.LoginWindow;
 import com.networking.semesterProject.Message;
 import com.networking.semesterProject.Message.Type;
 import com.networking.semesterProject.User;
@@ -33,6 +36,7 @@ public class ServerHelper implements Runnable {
 	//private List<MessageHelper> socketList = new ArrayList<MessageHelper>();
 
 	private Map<Integer, SimpleEntry<Socket, User>> socketList = new HashMap<Integer, SimpleEntry<Socket, User>>();
+	private Map<Integer, User> allUsers = new HashMap<Integer, User>();
 	
 	@Override
 	public void run() {
@@ -78,7 +82,21 @@ public class ServerHelper implements Runnable {
 					+ "CONSTRAINT FK_MToU_MessageID FOREIGN KEY (messageID) REFERENCES MessageTable(messageID)" + ")";
 
 			statement.executeUpdate(createMessageToUserTable);
-
+			
+			String createScheduleTable = "CREATE TABLE if not exists Schedule ("
+					  + "userID INT(64) NOT NULL, "
+					  + "Monday VARCHAR(45) NULL, "
+					  + "Tuesday VARCHAR(45) NULL, "
+					  + "Wednesday VARCHAR(45) NULL, "
+					  + "Thursday VARCHAR(45) NULL, "
+					  + "Friday VARCHAR(45) NULL, "
+					  + "Saturday VARCHAR(45) NULL, "
+					  + "Sunday VARCHAR(45) NULL, "
+					  + "CONSTRAINT FK_Schedule_UserID FOREIGN KEY (userID) REFERENCES UserTable(userID))";
+					  //+ "PRIMARY KEY (userID))";
+			
+			statement.executeUpdate(createScheduleTable);
+			
 			//String insertDefaultMessageTypes = "INSERT INTO MessageTypeTable " + "(messageTypeName)"
 			//		+ " SELECT ('Send'), ('Receive')" + " WHERE 0 = (SELECT COUNT(*) FROM MessageTypeTable );";
 			
@@ -93,16 +111,31 @@ public class ServerHelper implements Runnable {
 
 			statement.executeUpdate(insertDefaultMessageTypes);*/
 			
+			/*
+			 * PreparedStatement prepState = conn.prepareStatement("SELECT * FROM UserTable");
+			 */
+			ResultSet result = statement.executeQuery("SELECT * FROM UserTable");
+			
+			while(result.next())
+			{
+				Integer userID = result.getInt(1);
+				
+				User user = new User(userID, result.getString(2), result.getString(4), result.getString(5));
+				user.loggedIn = result.getBoolean(6);
+				
+				allUsers.put(userID, user);
+			}
+			
 			statement.close();
 			
 			conn.close();
 
-			welcomeSocket = new ServerSocket(9000);
+			welcomeSocket = new ServerSocket(LoginWindow.serverPort);
 
 			while (!welcomeSocket.isClosed()) {
 				Socket connectionSocket = welcomeSocket.accept();
 
-				MessageHelper messageHelper = new MessageHelper(socketList);
+				MessageHelper messageHelper = new MessageHelper(allUsers, socketList);
 				messageHelper.Start(connectionSocket);
 
 				//socketList.add(messageHelper);

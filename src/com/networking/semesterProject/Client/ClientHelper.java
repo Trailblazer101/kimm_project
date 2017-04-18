@@ -3,20 +3,25 @@ package com.networking.semesterProject.Client;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.net.Socket;
+import java.sql.SQLException;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Map;
 
 import com.networking.semesterProject.Message;
 import com.networking.semesterProject.Message.Type;
+import com.networking.semesterProject.Scheduler;
+import com.networking.semesterProject.SchedulerDialog;
+import com.networking.semesterProject.User;
 
 public class ClientHelper implements Runnable {
 
 	private Socket clientSocket;
-	private ClientInterface inter;
+	private ExtendedClientInterface inter;
 
-	public ClientHelper(ClientInterface inter, Socket clientSocket) {
+	public ClientHelper(ExtendedClientInterface inter, Socket clientSocket) {
 		this.clientSocket = clientSocket;
 		this.inter = inter;
 	}
@@ -59,21 +64,21 @@ public class ClientHelper implements Runnable {
 					}
 				} else if(msgObject instanceof List<?>)
 				{
-					List<Message> messageList = (List<Message>)msgObject;
-					
-					ZoneId zoneId = ZoneId.of("America/New_York");
-					
-					for(Message message : messageList)
-					{	
-						ZonedDateTime zdt = ZonedDateTime.ofInstant(message.timestamp, zoneId);
-
-						DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM/dd/uuuu HH:mm");
-
-						message.message = message.source.userName + " (" + zdt.format(formatter) + "): "
-								+ message.message + "\n";
-
-						inter.OnConnected(clientSocket, message);	
+					if(((List<?>) msgObject).get(0) instanceof Message)
+					{
+						List<Message> messageList = (List<Message>)msgObject;
+						
+						for(Message message : messageList)
+						{	
+							inter.OnConnected(clientSocket, message);	
+						}
+					} else 
+					{
+						inter.OnUserList((Map<Integer, User>)msgObject);
 					}
+				} else if (msgObject instanceof Scheduler){
+
+					inter.OnSchedule((Scheduler) msgObject);
 				}
 
 				// inFromServer.close();

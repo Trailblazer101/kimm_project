@@ -7,6 +7,7 @@ import javax.swing.JLabel;
 import javax.swing.JButton;
 
 import java.awt.event.ActionListener;
+import java.awt.event.WindowEvent;
 import java.io.IOException;
 import java.net.Socket;
 import java.util.AbstractMap;
@@ -35,6 +36,8 @@ public class LoginWindow {
 	private JTextField textField;
 	private JTextField textField_1;
 	private ServerHelper serverHelper;
+	private JTextField clientServerIP;
+	private JTextField clientServerPort;
 
 	/**
 	 * Launch the application.
@@ -44,7 +47,6 @@ public class LoginWindow {
 			@Override
 			public void run() {
 				try {
-					Class.forName("com.mysql.jdbc.Driver").newInstance();
 					LoginWindow window = new LoginWindow();
 					window.frame.setVisible(true);
 				} catch (Exception e) {
@@ -53,6 +55,12 @@ public class LoginWindow {
 			}
 		});
 	}
+	
+	public static String serverIP;
+	public static Integer serverPort;
+	
+	
+	private JTextField adminServerPort;
 
 	/**
 	 * Create the application.
@@ -67,7 +75,7 @@ public class LoginWindow {
 	 */
 	private void initialize() {
 		frame = new JFrame();
-		frame.setBounds(100, 100, 460, 367);
+		frame.setBounds(100, 100, 548, 411);
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		
 		final CardLayout cardLayout = new CardLayout(0, 0);
@@ -76,14 +84,15 @@ public class LoginWindow {
 		JPanel panel = new JPanel();
 		frame.getContentPane().add(panel, "name_238221794140412");
 												GridBagLayout gbl_panel = new GridBagLayout();
-												gbl_panel.columnWidths = new int[] {61, 70, 0, 92};
-												gbl_panel.rowHeights = new int[]{45, 0, 0, 0, 0, 0, 0};
+												gbl_panel.columnWidths = new int[] {61, 70, 137, 92};
+												gbl_panel.rowHeights = new int[]{45, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 												gbl_panel.columnWeights = new double[]{0.0, 0.0, 1.0, 0.0};
-												gbl_panel.rowWeights = new double[]{0.0, 0.0, 0.0, 1.0, 0.0, 0.0, Double.MIN_VALUE};
+												gbl_panel.rowWeights = new double[]{0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, Double.MIN_VALUE};
 												panel.setLayout(gbl_panel);
 																
 																		JLabel lblUsername = new JLabel("Username:");
 																		GridBagConstraints gbc_lblUsername = new GridBagConstraints();
+																		gbc_lblUsername.anchor = GridBagConstraints.WEST;
 																		gbc_lblUsername.fill = GridBagConstraints.VERTICAL;
 																		gbc_lblUsername.insets = new Insets(0, 0, 5, 5);
 																		gbc_lblUsername.gridx = 1;
@@ -101,6 +110,7 @@ public class LoginWindow {
 														
 																JLabel lblPassword = new JLabel("Password:");
 																GridBagConstraints gbc_lblPassword = new GridBagConstraints();
+																gbc_lblPassword.anchor = GridBagConstraints.WEST;
 																gbc_lblPassword.fill = GridBagConstraints.VERTICAL;
 																gbc_lblPassword.insets = new Insets(0, 0, 5, 5);
 																gbc_lblPassword.gridx = 1;
@@ -116,6 +126,42 @@ public class LoginWindow {
 																										gbc_textField.gridx = 3;
 																										gbc_textField.gridy = 2;
 																										panel.add(textField, gbc_textField);
+																								
+																								JLabel lblServerIp = new JLabel("Server IP:");
+																								GridBagConstraints gbc_lblServerIp = new GridBagConstraints();
+																								gbc_lblServerIp.anchor = GridBagConstraints.WEST;
+																								gbc_lblServerIp.insets = new Insets(0, 0, 5, 5);
+																								gbc_lblServerIp.gridx = 1;
+																								gbc_lblServerIp.gridy = 4;
+																								panel.add(lblServerIp, gbc_lblServerIp);
+																								
+																								clientServerIP = new JTextField();
+																								clientServerIP.setText("127.0.0.1");
+																								clientServerIP.setColumns(10);
+																								GridBagConstraints gbc_clientServerIP = new GridBagConstraints();
+																								gbc_clientServerIP.insets = new Insets(0, 0, 5, 5);
+																								gbc_clientServerIP.fill = GridBagConstraints.HORIZONTAL;
+																								gbc_clientServerIP.gridx = 3;
+																								gbc_clientServerIP.gridy = 4;
+																								panel.add(clientServerIP, gbc_clientServerIP);
+																								
+																								JLabel lblServerPort = new JLabel("Server Port:");
+																								GridBagConstraints gbc_lblServerPort = new GridBagConstraints();
+																								gbc_lblServerPort.anchor = GridBagConstraints.WEST;
+																								gbc_lblServerPort.insets = new Insets(0, 0, 5, 5);
+																								gbc_lblServerPort.gridx = 1;
+																								gbc_lblServerPort.gridy = 5;
+																								panel.add(lblServerPort, gbc_lblServerPort);
+																								
+																								clientServerPort = new JTextField();
+																								clientServerPort.setText("9000");
+																								clientServerPort.setColumns(10);
+																								GridBagConstraints gbc_clientServerPort = new GridBagConstraints();
+																								gbc_clientServerPort.insets = new Insets(0, 0, 5, 5);
+																								gbc_clientServerPort.fill = GridBagConstraints.HORIZONTAL;
+																								gbc_clientServerPort.gridx = 3;
+																								gbc_clientServerPort.gridy = 5;
+																								panel.add(clientServerPort, gbc_clientServerPort);
 																						
 																								final JButton loginButton = new JButton("Login");
 																								GridBagConstraints gbc_loginButton = new GridBagConstraints();
@@ -123,7 +169,7 @@ public class LoginWindow {
 																								gbc_loginButton.insets = new Insets(0, 0, 5, 0);
 																								gbc_loginButton.gridwidth = 5;
 																								gbc_loginButton.gridx = 0;
-																								gbc_loginButton.gridy = 4;
+																								gbc_loginButton.gridy = 7;
 																								panel.add(loginButton, gbc_loginButton);
 																								
 																								
@@ -133,6 +179,9 @@ public class LoginWindow {
 															public void actionPerformed(ActionEvent arg0) {
 																
 																loginButton.setEnabled(false);
+																
+																serverIP = clientServerIP.getText();
+																serverPort = Integer.parseInt(clientServerPort.getText());
 
 																LoginHelper clientHelper = new LoginHelper(new ClientInterface(){
 
@@ -140,8 +189,12 @@ public class LoginWindow {
 																	@Override
 																	public void OnConnected(Socket clientSocket, Message message) {
 																		// TODO Auto-generated method stub
-																		ClientWindow clientWindow = new ClientWindow(clientSocket, message);
+																		
+																		ClientWindow clientWindow = new ClientWindow(frame, clientSocket, message);
 																		clientWindow.Show();
+																		
+																		LoginWindow.this.frame.setVisible(false);
+																		loginButton.setEnabled(true);
 																	}
 
 																	@Override
@@ -173,14 +226,17 @@ public class LoginWindow {
 																clientHelper.Start();
 															}
 														});
+														
+														
+												frame.getRootPane().setDefaultButton(loginButton);
 												
 												JPanel panel_1 = new JPanel();
 												frame.getContentPane().add(panel_1, "name_238616311173393");
 												GridBagLayout gbl_panel_1 = new GridBagLayout();
-												gbl_panel_1.columnWidths = new int[]{0, 0, 0, 0, 0};
-												gbl_panel_1.rowHeights = new int[]{190, 0, 0, 0};
-												gbl_panel_1.columnWeights = new double[]{1.0, 0.0, 0.0, 1.0, Double.MIN_VALUE};
-												gbl_panel_1.rowWeights = new double[]{1.0, 0.0, 0.0, Double.MIN_VALUE};
+												gbl_panel_1.columnWidths = new int[]{0, 0, 0, 0, 0, 0};
+												gbl_panel_1.rowHeights = new int[]{80, 0, 190, 0, 0, 0};
+												gbl_panel_1.columnWeights = new double[]{1.0, 0.0, 0.0, 0.0, 1.0, Double.MIN_VALUE};
+												gbl_panel_1.rowWeights = new double[]{0.0, 0.0, 1.0, 0.0, 0.0, Double.MIN_VALUE};
 												panel_1.setLayout(gbl_panel_1);
 												
 												final JButton stopServerButton = new JButton("Stop Server");
@@ -192,6 +248,8 @@ public class LoginWindow {
 														serverHelper = new ServerHelper();
 														
 														startServerButton.setEnabled(false);
+														
+														serverPort = Integer.parseInt(adminServerPort.getText());
 														
 														serverHelper.Start(new ServerInterface(){
 
@@ -207,11 +265,30 @@ public class LoginWindow {
 														stopServerButton.setEnabled(true);
 													}
 												});
+												
+												JLabel lblServerPort_1 = new JLabel("Server Port:");
+												GridBagConstraints gbc_lblServerPort_1 = new GridBagConstraints();
+												gbc_lblServerPort_1.anchor = GridBagConstraints.EAST;
+												gbc_lblServerPort_1.insets = new Insets(0, 0, 5, 5);
+												gbc_lblServerPort_1.gridx = 1;
+												gbc_lblServerPort_1.gridy = 1;
+												panel_1.add(lblServerPort_1, gbc_lblServerPort_1);
+												
+												adminServerPort = new JTextField();
+												adminServerPort.setText("9000");
+												GridBagConstraints gbc_adminServerPort = new GridBagConstraints();
+												gbc_adminServerPort.fill = GridBagConstraints.HORIZONTAL;
+												gbc_adminServerPort.insets = new Insets(0, 0, 5, 5);
+												gbc_adminServerPort.gridx = 3;
+												gbc_adminServerPort.gridy = 1;
+												panel_1.add(adminServerPort, gbc_adminServerPort);
+												adminServerPort.setColumns(10);
 												GridBagConstraints gbc_startServerButton = new GridBagConstraints();
+												gbc_startServerButton.anchor = GridBagConstraints.WEST;
 												gbc_startServerButton.fill = GridBagConstraints.VERTICAL;
 												gbc_startServerButton.insets = new Insets(0, 0, 5, 5);
-												gbc_startServerButton.gridx = 1;
-												gbc_startServerButton.gridy = 1;
+												gbc_startServerButton.gridx = 2;
+												gbc_startServerButton.gridy = 3;
 												panel_1.add(startServerButton, gbc_startServerButton);
 												
 												
@@ -236,10 +313,10 @@ public class LoginWindow {
 													}
 												});
 												GridBagConstraints gbc_stopServerButton = new GridBagConstraints();
-												gbc_stopServerButton.fill = GridBagConstraints.VERTICAL;
+												gbc_stopServerButton.fill = GridBagConstraints.BOTH;
 												gbc_stopServerButton.insets = new Insets(0, 0, 5, 5);
-												gbc_stopServerButton.gridx = 2;
-												gbc_stopServerButton.gridy = 1;
+												gbc_stopServerButton.gridx = 3;
+												gbc_stopServerButton.gridy = 3;
 												panel_1.add(stopServerButton, gbc_stopServerButton);
 
 		JMenuBar menuBar = new JMenuBar();
@@ -259,6 +336,14 @@ public class LoginWindow {
 		
 		mntmManageUsers.setVisible(false);
 		mnFile.add(mntmManageUsers);
+		
+		JMenuItem mntmClose = new JMenuItem("Close");
+		mntmClose.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				frame.dispatchEvent(new WindowEvent(frame, WindowEvent.WINDOW_CLOSING));
+			}
+		});
+		mnFile.add(mntmClose);
 
 		JMenu mnHelp = new JMenu("Help");
 		menuBar.add(mnHelp);
@@ -277,9 +362,28 @@ public class LoginWindow {
 				Boolean isAdmin = dialog.showDialog();
 
 				if (isAdmin) {
-					//btnNewButton.setText("Start Server");
-					cardLayout.next(frame.getContentPane());
-					mntmManageUsers.setVisible(true);
+					
+					try {
+						Class.forName("com.mysql.jdbc.Driver").newInstance();
+						
+						//btnNewButton.setText("Start Server");
+						cardLayout.next(frame.getContentPane());
+						mntmManageUsers.setVisible(true);
+						
+					} catch (InstantiationException e1) {
+						// TODO Auto-generated catch block
+						e1.printStackTrace();
+						
+						new ErrorDialog("You Don't Have MySQL!").showDialog();
+					} catch (IllegalAccessException e1) {
+						// TODO Auto-generated catch block
+						e1.printStackTrace();
+						new ErrorDialog("You Don't Have MySQL!").showDialog();
+					} catch (ClassNotFoundException e1) {
+						// TODO Auto-generated catch block
+						e1.printStackTrace();
+						new ErrorDialog("You Don't Have MySQL!").showDialog();
+					}	
 				}
 			}
 

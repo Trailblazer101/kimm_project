@@ -30,7 +30,7 @@ public class LoginHelper implements Runnable {
 	public void run() {
 		Socket clientSocket = null;
 		try {
-			clientSocket = new Socket("localhost", 9000);
+			clientSocket = new Socket(LoginWindow.serverIP, LoginWindow.serverPort);
 
 			/*DataOutputStream outToServer = new DataOutputStream(clientSocket.getOutputStream());
 			BufferedReader inFromServer = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));

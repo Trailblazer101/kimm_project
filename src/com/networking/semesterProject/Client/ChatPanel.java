@@ -8,7 +8,10 @@ import javax.swing.JTextPane;
 import javax.swing.table.DefaultTableModel;
 
 import com.networking.semesterProject.Message;
+import com.networking.semesterProject.Scheduler;
+import com.networking.semesterProject.SchedulerDialog;
 import com.networking.semesterProject.Message.Type;
+import com.networking.semesterProject.User;
 
 import java.awt.Adjustable;
 import java.awt.BorderLayout;
@@ -19,9 +22,10 @@ import javax.swing.JTextField;
 import java.awt.Insets;
 import java.io.*;
 import java.net.*;
-
+import java.sql.SQLException;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 import java.awt.event.ActionListener;
 import java.awt.event.AdjustmentEvent;
 import java.awt.event.AdjustmentListener;
@@ -40,52 +44,48 @@ public class ChatPanel extends JPanel {
 	private JTable table;
 	private DefaultTableModel model;
 	
-	public ChatPanel(Socket clien, Message message)
+	private ClientWindow parentWindow;
+	
+	public ChatPanel(ClientWindow parentWindow, Socket clien, Message message)
 	{
+		this.parentWindow = parentWindow;
+		
 		initialize(message);
 		//}
 		
 		clientSocket = clien;
 		
-		ClientHelper clientHelper = new ClientHelper(new ClientInterface(){
-
-			@Override
-			public void OnConnected(Socket clientSocket, Message message) {
-				// TODO Auto-generated method stub
-				//textArea.append(message.message);		
-				
-				ZoneId zoneId = ZoneId.of("America/New_York");
-				ZonedDateTime zdt = ZonedDateTime.ofInstant(message.timestamp, zoneId);
-
-				DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM/dd/uuuu HH:mm");
-				
-				model.addRow(new Object[]{message.source.userName, message.message, zdt.format(formatter)});
-				
-				ScrollToBottom();	
-			}
-
-			@Override
-			public void OnFailed() {
-				// TODO Auto-generated method stub
-				
-			}
-
-			@Override
-			public void OnDisconnected(Message message) {
-				// TODO Auto-generated method stub
-	
-				model.setRowCount(0);
-				
-				//textArea.setText(message);
-
-				model.addRow(new Object[]{"Disconnected With Message:", message.message, null});
-				
-				ScrollToBottom();
-				
-				btnNewButton.setEnabled(false);
-			}}, clien);
 		
-		clientHelper.Start();
+		
+		//clientHelper.Start();
+	}
+	
+	void OnConnected(Message message)
+	{
+		// TODO Auto-generated method stub
+		//textArea.append(message.message);		
+		
+		ZoneId zoneId = ZoneId.of("America/New_York");
+		ZonedDateTime zdt = ZonedDateTime.ofInstant(message.timestamp, zoneId);
+
+		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM/dd/uuuu HH:mm");
+		
+		model.addRow(new Object[]{message.source.userName, message.message, zdt.format(formatter)});
+		
+		ScrollToBottom();	
+	}
+	
+	void OnDisconnected(Message message)
+	{
+		model.setRowCount(0);
+		
+		//textArea.setText(message);
+
+		model.addRow(new Object[]{"Disconnected With Message:", message.message, null});
+		
+		ScrollToBottom();
+		
+		btnNewButton.setEnabled(false);
 	}
 	
 	private void ScrollToBottom()
@@ -105,29 +105,36 @@ public class ChatPanel extends JPanel {
 	public void initialize(final Message message) {
 		setLayout(new BorderLayout(0, 0));
 		
-		model = new DefaultTableModel();
+		model = new DefaultTableModel(
+				new Object[][] {
+				},
+				new String[] {
+					"From", "Message", "When"
+				}
+			);
 		
-		model.addColumn("From");
+		/*model.addColumn("From");
 		model.addColumn("Message");
-		model.addColumn("When");
+		model.addColumn("When");*/
 		
-		model.addRow(new Object[]{"Server Says:", message.message, null});
-		
-		
-		JPanel newPanel = new JPanel();
-		newPanel.setLayout(new BorderLayout(0, 0));
+		model.addRow(new Object[]{"Server Says:", message.message, null});	
 		
 		table = new JTable();
 		
-		newPanel.add(table);
-		
-		scrollPane = new JScrollPane(newPanel);
+		scrollPane = new JScrollPane(table);
 		//pane.add(table);
 		
 		add(scrollPane, BorderLayout.CENTER);
 		
 		table.setShowVerticalLines(false);
+		
 		table.setModel(model);
+		
+		table.getColumnModel().getColumn(0).setPreferredWidth(90);
+		table.getColumnModel().getColumn(0).setMaxWidth(90);
+		
+		table.getColumnModel().getColumn(2).setPreferredWidth(125);
+		table.getColumnModel().getColumn(2).setMaxWidth(125);
 		
 		JPanel panel = new JPanel();
 		add(panel, BorderLayout.SOUTH);
@@ -181,7 +188,8 @@ public class ChatPanel extends JPanel {
 		gbc_btnNewButton.gridx = 1;
 		gbc_btnNewButton.gridy = 0;
 		panel.add(btnNewButton, gbc_btnNewButton);
-
+		
+		parentWindow.frame.getRootPane().setDefaultButton(btnNewButton);
 	}
 
 }
