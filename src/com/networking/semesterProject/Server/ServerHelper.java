@@ -38,6 +38,13 @@ public class ServerHelper implements Runnable {
 	private Map<Integer, SimpleEntry<Socket, User>> socketList = new HashMap<Integer, SimpleEntry<Socket, User>>();
 	private Map<Integer, User> allUsers = new HashMap<Integer, User>();
 	
+	
+	public void UserListUpdate()
+	{
+		UserListHelper helper = new UserListHelper(allUsers, socketList);
+		helper.Start();
+	}
+	
 	@Override
 	public void run() {
 

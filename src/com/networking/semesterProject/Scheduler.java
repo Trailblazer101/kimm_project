@@ -28,18 +28,18 @@ public class Scheduler implements Serializable{
 	
 	public Scheduler(ResultSet rs) {
 		
-		try {
-			rs.next();
-			
-			for(int i = 1 ; i <=7; i++ ){
-				workWeek.add(rs.getString(i));
+		workWeek = new ArrayList<String>();
+		
+			for(int i = 1 ; i <= 7; i++ ){
 				
+					try {
+						workWeek.add(rs.getString(i));
+					} catch (SQLException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
 			}
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}	
-	}
+		}
 	
 	public Scheduler() {
 		// TODO Auto-generated constructor stub

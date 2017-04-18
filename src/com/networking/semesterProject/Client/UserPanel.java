@@ -10,6 +10,8 @@ import com.networking.semesterProject.User;
 
 import java.awt.Color;
 import java.sql.*;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -27,16 +29,19 @@ public class UserPanel extends JPanel {
 	public class ExtendedTableModel extends DefaultTableModel {
 
 		public ExtendedTableModel() {
-			super(new Object[][] {}, new Object[] { "Send To", /*"Logged In",*/ "Username", "Full Name" });
+			super(new Object[][] {},
+					new Object[] { "Send To", "ID", /* "Logged In", */ "Username"/* , "Full Name" */ });
 		}
 
-		Class[] columnTypes = new Class[] { Boolean.class, /*Boolean.class,*/ String.class, String.class };
+		Class[] columnTypes = new Class[] { Boolean.class, Integer.class,
+				/* Boolean.class, */ String.class/* , String.class */ };
 
 		public Class getColumnClass(int columnIndex) {
 			return columnTypes[columnIndex];
 		}
 
-		boolean[] columnEditables = new boolean[] { true, /*false,*/ false, false };
+		boolean[] columnEditables = new boolean[] { true, false,
+				/* false, */ false/* , false */ };
 
 		public boolean isCellEditable(int row, int column) {
 			return columnEditables[column];
@@ -45,22 +50,45 @@ public class UserPanel extends JPanel {
 		// boolean[] isNeeded = new boolean[] { true, true, true, true, false,
 		// false, true };
 	}
-	
-	void UpdateUserList(Map<Integer, User> destination)
-	{
-		model.setRowCount(0);
-		
 
-		if(destination != null && !destination.isEmpty())
-		for(User user : destination.values())
-		{
-			model.addRow(new Object[]{true, /*user.loggedIn,*/ user.userName, user.firstName + " " + user.lastName});
-		}
+	void UpdateUserList(Map<Integer, User> destination) {
+		model.setRowCount(0);
+
+		if (destination != null && !destination.isEmpty())
+			for (User user : destination.values()) {
+				if (userInfo.id != user.id)
+					model.addRow(new Object[] { true, user.id,
+							/* user.loggedIn, */ user.userName/*
+																 * , user.
+																 * firstName +
+																 * " " +
+																 * user.lastName
+																 */ });
+			}
 	}
-	
+
+	public Map<Integer, User> GetSelectedUsers() {
+		Map<Integer, User> users = new HashMap<Integer, User>();
+
+		for (int i = 0; i < model.getRowCount(); i++) {
+			if ((boolean) model.getValueAt(i, 0)) {
+				Integer userID = (Integer) model.getValueAt(i, 1);
+
+				users.put(userID, new User(userID));
+			}
+		}
+
+		return users;
+	}
+
 	private ExtendedTableModel model;
 
-	public UserPanel() {
+	private User userInfo;
+
+	public UserPanel(User user) {
+
+		this.userInfo = user;
+
 		setLayout(new BorderLayout(0, 0));
 
 		model = new ExtendedTableModel();

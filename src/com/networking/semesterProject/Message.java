@@ -9,7 +9,7 @@ public class Message implements Serializable
 	private static final long serialVersionUID = 1L;
 
 	public enum Type {
-	    Init, Disconnect, Send, Schedule
+	    Init, Disconnect, Send, Schedule, Update
 	}
 	
 	public Type type;

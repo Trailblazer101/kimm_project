@@ -12,10 +12,13 @@ import com.networking.semesterProject.Scheduler;
 import com.networking.semesterProject.SchedulerDialog;
 import com.networking.semesterProject.Message.Type;
 import com.networking.semesterProject.User;
+import com.networking.semesterProject.Client.ClientWindow.ChatInterface;
 
 import java.awt.Adjustable;
 import java.awt.BorderLayout;
 import javax.swing.JButton;
+import javax.swing.JFrame;
+
 import java.awt.GridBagLayout;
 import java.awt.GridBagConstraints;
 import javax.swing.JTextField;
@@ -44,19 +47,20 @@ public class ChatPanel extends JPanel {
 	private JTable table;
 	private DefaultTableModel model;
 	
-	private ClientWindow parentWindow;
+	private JFrame parentWindow;
 	
-	public ChatPanel(ClientWindow parentWindow, Socket clien, Message message)
+	private ChatInterface chatInter;
+	
+	public ChatPanel(JFrame parentWindow, ChatInterface chatInter, Socket clien, Message message)
 	{
 		this.parentWindow = parentWindow;
+		this.chatInter = chatInter;
 		
 		initialize(message);
 		//}
 		
 		clientSocket = clien;
-		
-		
-		
+
 		//clientHelper.Start();
 	}
 	
@@ -160,26 +164,24 @@ public class ChatPanel extends JPanel {
 				
 				//if(message.type == Type.Init)
 				//{
-					String gotMessage = textField.getText();
-					
-					Instant instant = Instant.now();
-					
-					ZoneId zoneId = ZoneId.of( "America/New_York" );
-					ZonedDateTime zdt = ZonedDateTime.ofInstant( instant , zoneId );
-									
-					DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM/dd/uuuu HH:mm");
+				
+				String gotMessage = textField.getText();
+				
+				Instant instant = Instant.now();
+				
+				ZoneId zoneId = ZoneId.of( "America/New_York" );
+				ZonedDateTime zdt = ZonedDateTime.ofInstant( instant , zoneId );
+								
+				DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM/dd/uuuu HH:mm");
 
-					//textArea.append(message.source.userName + " (" + zdt.format(formatter) + "): " + gotMessage + "\n");	
-					
-					model.addRow(new Object[]{message.source.userName, gotMessage, zdt.format(formatter)});
-					
-					ScrollToBottom();
-					
-					MessageHelper messageHelper = new MessageHelper();
-					messageHelper.Start(clientSocket, new Message(Type.Send, message.source, null, gotMessage, instant));
-					
+				model.addRow(new Object[]{message.source.userName, gotMessage, zdt.format(formatter)});
+				
+				ScrollToBottom();
 					
 					textField.setText("");
+					
+					chatInter.OnSubmitted(gotMessage, instant);
+						
 				//}
 			}
 		});
@@ -189,7 +191,7 @@ public class ChatPanel extends JPanel {
 		gbc_btnNewButton.gridy = 0;
 		panel.add(btnNewButton, gbc_btnNewButton);
 		
-		parentWindow.frame.getRootPane().setDefaultButton(btnNewButton);
+		parentWindow.getRootPane().setDefaultButton(btnNewButton);
 	}
 
 }

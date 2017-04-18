@@ -49,6 +49,20 @@ public class User implements Serializable
 		this.loggedIn = false;
 	}
 	
+	public User(Integer id, String userName)
+	{
+		this.type = Type.User;
+		this.id = id;
+		
+		this.userName = userName;
+		this.userPassword = null;
+		
+		this.firstName = null;
+		this.lastName = null;
+		
+		this.loggedIn = false;
+	}   
+	
 	public User( Integer id, String userName, String firstName, String lastName)
 	{
 		this.type = Type.User;

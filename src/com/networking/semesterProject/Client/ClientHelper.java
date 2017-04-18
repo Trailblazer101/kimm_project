@@ -43,6 +43,11 @@ public class ClientHelper implements Runnable {
 
 				if (msgObject instanceof Message) {
 					Message message = (Message) msgObject;
+					
+					if(message.type == Type.Update)
+					{
+						inter.OnUserUpdate(message.destination);
+					} else
 					if (message.type == Type.Send) {
 						/*ZoneId zoneId = ZoneId.of("America/New_York");
 						ZonedDateTime zdt = ZonedDateTime.ofInstant(message.timestamp, zoneId);
@@ -64,18 +69,19 @@ public class ClientHelper implements Runnable {
 					}
 				} else if(msgObject instanceof List<?>)
 				{
-					if(((List<?>) msgObject).get(0) instanceof Message)
-					{
+					List<?> genericList = (List<?>) msgObject;
+					//if(genericList.get(0) instanceof Message)
+					//{
 						List<Message> messageList = (List<Message>)msgObject;
 						
 						for(Message message : messageList)
 						{	
 							inter.OnConnected(clientSocket, message);	
 						}
-					} else 
+					/*} else 
 					{
 						inter.OnUserList((Map<Integer, User>)msgObject);
-					}
+					}*/
 				} else if (msgObject instanceof Scheduler){
 
 					inter.OnSchedule((Scheduler) msgObject);

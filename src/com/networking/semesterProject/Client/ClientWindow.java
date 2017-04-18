@@ -3,6 +3,7 @@ package com.networking.semesterProject.Client;
 import java.awt.EventQueue;
 import java.net.Socket;
 import java.sql.SQLException;
+import java.time.Instant;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
@@ -84,7 +85,7 @@ public class ClientWindow {
 			}
 
 			@Override
-			public void OnUserList(Map<Integer, User> userList) {
+			public void OnUserUpdate(Map<Integer, User> userList) {
 				// TODO Auto-generated method stub
 				userPanel.UpdateUserList(userList);
 			}}, clien);
@@ -101,6 +102,12 @@ public class ClientWindow {
 
 	private ChatPanel chatPanel;
 	private UserPanel userPanel;
+	
+	public interface ChatInterface
+	{
+		public void OnSubmitted(String message, Instant instant);
+	}
+	
 	/**
 	 * Initialize the contents of the frame.
 	 */
@@ -130,11 +137,23 @@ public class ClientWindow {
 		JSplitPane splitPane = new JSplitPane();
 		splitPane.setResizeWeight(0.75);
 		frame.getContentPane().add(splitPane, BorderLayout.CENTER);
-		chatPanel = new ChatPanel(this, clientSocket, message);
+		chatPanel = new ChatPanel(frame, new ChatInterface(){
+
+			@Override
+			public void OnSubmitted(String gotMessage, Instant instant) {
+
+				//
+				
+				
+				
+				MessageHelper messageHelper = new MessageHelper();
+				messageHelper.Start(clientSocket, new Message(Type.Send, message.source, userPanel.GetSelectedUsers(), gotMessage, instant));
+				
+			}}, clientSocket, message);
 		splitPane.setLeftComponent(chatPanel);
 		
 		//JPanel panel = new JPanel();
-		userPanel = new UserPanel();
+		userPanel = new UserPanel(message.source);
 		splitPane.setRightComponent(userPanel);
 
 		JMenuBar menuBar = new JMenuBar();

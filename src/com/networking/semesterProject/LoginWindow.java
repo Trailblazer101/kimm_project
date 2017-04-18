@@ -329,7 +329,7 @@ public class LoginWindow {
 		mntmManageUsers.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				
-				UserManager userManager = new UserManager();
+				UserManager userManager = new UserManager(serverHelper);
 				userManager.Show();
 			}
 		});

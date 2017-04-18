@@ -34,8 +34,13 @@ public class UserManager {
 
 	/**
 	 * Create the application.
+	 * @param serverHelper 
 	 */
-	public UserManager() {
+	ServerHelper serverHelper;
+	
+	public UserManager(ServerHelper serverHelper) {
+		
+		this.serverHelper = serverHelper;
 		initialize();
 	}
 	
@@ -174,6 +179,7 @@ public class UserManager {
 							e.printStackTrace();
 						}
 						
+						serverHelper.UserListUpdate();
 						frame.dispatchEvent(new WindowEvent(frame, WindowEvent.WINDOW_CLOSING));
 					}
 				}
@@ -194,8 +200,6 @@ public class UserManager {
 		btnNewButton_2.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 
-				int rowCount = model.getRowCount();
-
 				Connection conn = null;
 
 				PreparedStatement preparedStatement = null;
@@ -209,12 +213,13 @@ public class UserManager {
 
 					int statementCount = 0;
 
-					for (int i = 0; i < rowCount; i++) {
+					for (int i = 0; i < model.getRowCount(); i++) {
 						if ((boolean) model.getValueAt(i, 0)) {
 							
-							model.removeRow(i);
+							
 							preparedStatement.setInt(1, (int) model.getValueAt(i, 1));
-
+							model.removeRow(i);
+							
 							preparedStatement.addBatch();
 
 							if (statementCount == 1000) {

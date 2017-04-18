@@ -33,19 +33,6 @@ public class FillSchedule extends JDialog {
 	private JTextField textField_7;
 
 	/**
-	 * Launch the application.
-	 */
-	public static void main(String[] args) {
-		try {
-			FillSchedule dialog = new FillSchedule();
-			dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-			dialog.setVisible(true);
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
-
-	/**
 	 * Create the dialog.
 	 */
 	public FillSchedule() {
@@ -160,7 +147,7 @@ public class FillSchedule extends JDialog {
 				textField_6.setColumns(10);
 			}
 			{
-				JLabel lblUserId = new JLabel("User ID");
+				JLabel lblUserId =  new JLabel("User ID");
 				panel.add(lblUserId);
 			}
 			{
@@ -190,13 +177,13 @@ public class FillSchedule extends JDialog {
 						
 						
 						Connection conn = null;
-						//PreparedStatement preparedStatement = null;
+						PreparedStatement preparedStatement = null;
 						Statement stmt = null;
 
 						
 							try {
 								conn = DriverManager.getConnection(
-										"jdbc:mysql://localhost/networkProject?user=root&password=tst12368&rewriteBatchedStatements=true");
+										"jdbc:mysql://localhost/networkProject?user=root&password=tst12368");
 								
 								
 								stmt =  conn.createStatement();
@@ -207,26 +194,38 @@ public class FillSchedule extends JDialog {
 								int userID = Integer.parseInt(textField_7.getText());
 								
 								
-								sql = "INSERT INTO Schedule (userID, Monday, Tuesday, Wednesday, Thursday, Friday, Saturday, Sunday) VALUES "; 
+								sql = "INSERT INTO Schedule (userID, Monday, Tuesday, Wednesday, Thursday, Friday, Saturday, Sunday) VALUES (?,?,?,?,?,?,?,?)"; 
 								
-								sql2 =" ("+ userID +", "+textField.getText() +","+ textField_1.getText() +", "+textField_2.getText() +", "
-										+textField_3.getText() +", "+textField_4.getText() +", "+textField_5.getText() +", "+textField_6.getText()+")";
+								preparedStatement = conn.prepareStatement(sql);
 								
-								sql+=sql2;
+								preparedStatement.setInt(1,userID);
 								
-								stmt.executeUpdate(sql);
+								preparedStatement.setString(2, textField.getText());
+								preparedStatement.setString(3, textField_1.getText());
+								preparedStatement.setString(4, textField_2.getText());
+								preparedStatement.setString(5, textField_3.getText());
+								preparedStatement.setString(6, textField_4.getText());
+								preparedStatement.setString(7, textField_5.getText());
+								preparedStatement.setString(8, textField_6.getText());
+
+								preparedStatement.execute();
+
+								
+								
+								
+								//sql2 =" ("+ Integer.toString(userID) +", "+textField.getText() +","+ textField_1.getText() +", "+textField_2.getText() +", "
+									//	+textField_3.getText() +", "+textField_4.getText() +", "+textField_5.getText() +", "+textField_6.getText()+")";
+								
+								//sql+=sql2;
+								
+								//stmt.executeUpdate(sql);
 								
 								
 							} catch (SQLException e) {
 								// TODO Auto-generated catch block
 								e.printStackTrace();
 							}
-						
-						
-												
-						
-						
-						
+	
 						
 						
 					}

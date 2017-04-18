@@ -231,9 +231,9 @@ public class MessageHelper implements Runnable {
 
 								socketList.put(userID, messageInfo);
 
-								BatchMessageHelper mesageHelper = new BatchMessageHelper(messageInfo);
+								BatchMessageHelper messageHelper = new BatchMessageHelper(messageInfo);
 
-								mesageHelper.Start(Instant.now().minus(3, ChronoUnit.DAYS));
+								messageHelper.Start(Instant.now().minus(3, ChronoUnit.DAYS));
 							}
 						} else {
 							outToServer.writeObject(new Message(Type.Disconnect, null, null,
@@ -275,25 +275,23 @@ public class MessageHelper implements Runnable {
 
 						ResultSet resultSet = preparedStatement.executeQuery();
 
-						Scheduler schedule = null;
+						Scheduler schedule;
 						
 						if (resultSet.next())
+						{
 							schedule = new Scheduler(resultSet);
-						else
+						} else
 							schedule = new Scheduler();
+						
 
 							//List<String> cool = new ArrayList<String>();
 
 							// cool.add(resultSet.)
 
-							ObjectOutputStream outToServer = new ObjectOutputStream(clientSocket.getOutputStream());
-
-							
-							 
+							ObjectOutputStream outToServer = new ObjectOutputStream(clientSocket.getOutputStream());			 
 							
 							outToServer.writeObject(schedule);
-						
-
+	
 					} catch (SQLException e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();

@@ -9,5 +9,5 @@ import com.networking.semesterProject.User;
 public interface ExtendedClientInterface extends ClientInterface {
 	
 	public void OnSchedule(Scheduler schedule);
-	public void OnUserList(Map<Integer, User> userList);
+	public void OnUserUpdate(Map<Integer, User> userList);
 }
