@@ -104,6 +104,17 @@ public class ServerHelper implements Runnable {
 			
 			statement.executeUpdate(createScheduleTable);
 			
+			String createTaskTable = "CREATE TABLE if not exists TaskTable (" 
+		            + "taskID INT(64) NOT NULL AUTO_INCREMENT, "  
+		            + "taskName VARCHAR(50) NOT NULL, " 
+		            + "taskDesc VARCHAR(255) NULL, "
+		            + "taskStartTS TIMESTAMP NULL, "  
+		            + "taskEndTS TIMESTAMP NULL, "
+		            + "PRIMARY KEY(taskID))";  
+			
+			
+			statement.executeUpdate(createTaskTable);
+			
 			//String insertDefaultMessageTypes = "INSERT INTO MessageTypeTable " + "(messageTypeName)"
 			//		+ " SELECT ('Send'), ('Receive')" + " WHERE 0 = (SELECT COUNT(*) FROM MessageTypeTable );";
 			

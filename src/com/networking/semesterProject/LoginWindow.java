@@ -7,6 +7,7 @@ import javax.swing.JLabel;
 import javax.swing.JButton;
 
 import java.awt.event.ActionListener;
+import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.IOException;
 import java.net.Socket;
@@ -20,6 +21,7 @@ import javax.swing.JMenuItem;
 import java.awt.CardLayout;
 import javax.swing.JPanel;
 import com.networking.semesterProject.Client.LoginHelper;
+import com.networking.semesterProject.Client.TaskWindow;
 import com.networking.semesterProject.Client.ClientInterface;
 import com.networking.semesterProject.Client.ClientWindow;
 import com.networking.semesterProject.Server.ServerHelper;
@@ -32,7 +34,7 @@ import java.awt.Insets;
 
 public class LoginWindow {
 	
-	private JFrame frame;
+	private JFrame frmLoginWindow;
 	private JTextField textField;
 	private JTextField textField_1;
 	private ServerHelper serverHelper;
@@ -46,12 +48,21 @@ public class LoginWindow {
 		EventQueue.invokeLater(new Runnable() {
 			@Override
 			public void run() {
-				try {
-					LoginWindow window = new LoginWindow();
-					window.frame.setVisible(true);
+				
+				try {	
+					Class.forName("com.mysql.jdbc.Driver").newInstance();
+					
 				} catch (Exception e) {
 					e.printStackTrace();
+					
+					new ErrorDialog("You Don't Have MySQL!").showDialog();
+					
+					minimumMode = true;
 				}
+				
+					LoginWindow window = new LoginWindow();
+					window.frmLoginWindow.setVisible(true);
+				
 			}
 		});
 	}
@@ -66,6 +77,9 @@ public class LoginWindow {
 	 * Create the application.
 	 * 
 	 */
+	
+	public static boolean minimumMode = false;
+	
 	public LoginWindow() {
 		initialize();
 	}
@@ -74,18 +88,19 @@ public class LoginWindow {
 	 * Initialize the contents of the frame.
 	 */
 	private void initialize() {
-		frame = new JFrame();
-		frame.setBounds(100, 100, 548, 411);
-		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		frmLoginWindow = new JFrame();
+		frmLoginWindow.setTitle("Login Window");
+		frmLoginWindow.setBounds(100, 100, 548, 411);
+		frmLoginWindow.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		
 		final CardLayout cardLayout = new CardLayout(0, 0);
-		frame.getContentPane().setLayout(cardLayout);
+		frmLoginWindow.getContentPane().setLayout(cardLayout);
 		
 		JPanel panel = new JPanel();
-		frame.getContentPane().add(panel, "name_238221794140412");
+		frmLoginWindow.getContentPane().add(panel, "name_238221794140412");
 												GridBagLayout gbl_panel = new GridBagLayout();
 												gbl_panel.columnWidths = new int[] {61, 70, 137, 92};
-												gbl_panel.rowHeights = new int[]{45, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+												gbl_panel.rowHeights = new int[]{45, 0, 0, 89, 0, 0, 0, 0, 0, 0};
 												gbl_panel.columnWeights = new double[]{0.0, 0.0, 1.0, 0.0};
 												gbl_panel.rowWeights = new double[]{0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, Double.MIN_VALUE};
 												panel.setLayout(gbl_panel);
@@ -190,10 +205,29 @@ public class LoginWindow {
 																	public void OnConnected(Socket clientSocket, Message message) {
 																		// TODO Auto-generated method stub
 																		
-																		ClientWindow clientWindow = new ClientWindow(frame, clientSocket, message);
-																		clientWindow.Show();
+																		ClientWindow clientWindow = new ClientWindow(frmLoginWindow, clientSocket, message);
+																		clientWindow.setVisible(true);
 																		
-																		LoginWindow.this.frame.setVisible(false);
+																		//if(!minimumMode)
+																		//{
+																		TaskWindow taskWindow = new TaskWindow();
+																	       
+																		taskWindow.setLocation(clientWindow.getX() + clientWindow.getWidth(), clientWindow.getY());
+																		taskWindow.setVisible(true);
+																		
+																		clientWindow.addWindowListener(new WindowAdapter() {
+																			
+																			@Override
+																            public void windowClosing(WindowEvent evt){
+																				taskWindow.dispatchEvent(new WindowEvent(taskWindow, WindowEvent.WINDOW_CLOSING));
+																			}
+																		});
+																		//}
+																		
+
+																        
+																		
+																		LoginWindow.this.frmLoginWindow.setVisible(false);
 																		loginButton.setEnabled(true);
 																	}
 
@@ -228,10 +262,10 @@ public class LoginWindow {
 														});
 														
 														
-												frame.getRootPane().setDefaultButton(loginButton);
+												frmLoginWindow.getRootPane().setDefaultButton(loginButton);
 												
 												JPanel panel_1 = new JPanel();
-												frame.getContentPane().add(panel_1, "name_238616311173393");
+												frmLoginWindow.getContentPane().add(panel_1, "name_238616311173393");
 												GridBagLayout gbl_panel_1 = new GridBagLayout();
 												gbl_panel_1.columnWidths = new int[]{0, 0, 0, 0, 0, 0};
 												gbl_panel_1.rowHeights = new int[]{80, 0, 190, 0, 0, 0};
@@ -320,7 +354,7 @@ public class LoginWindow {
 												panel_1.add(stopServerButton, gbc_stopServerButton);
 
 		JMenuBar menuBar = new JMenuBar();
-		frame.setJMenuBar(menuBar);
+		frmLoginWindow.setJMenuBar(menuBar);
 
 		JMenu mnFile = new JMenu("File");
 		menuBar.add(mnFile);
@@ -340,7 +374,7 @@ public class LoginWindow {
 		JMenuItem mntmClose = new JMenuItem("Close");
 		mntmClose.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				frame.dispatchEvent(new WindowEvent(frame, WindowEvent.WINDOW_CLOSING));
+				frmLoginWindow.dispatchEvent(new WindowEvent(frmLoginWindow, WindowEvent.WINDOW_CLOSING));
 			}
 		});
 		mnFile.add(mntmClose);
@@ -362,28 +396,11 @@ public class LoginWindow {
 				Boolean isAdmin = dialog.showDialog();
 
 				if (isAdmin) {
-					
-					try {
-						Class.forName("com.mysql.jdbc.Driver").newInstance();
 						
 						//btnNewButton.setText("Start Server");
-						cardLayout.next(frame.getContentPane());
+						cardLayout.next(frmLoginWindow.getContentPane());
 						mntmManageUsers.setVisible(true);
-						
-					} catch (InstantiationException e1) {
-						// TODO Auto-generated catch block
-						e1.printStackTrace();
-						
-						new ErrorDialog("You Don't Have MySQL!").showDialog();
-					} catch (IllegalAccessException e1) {
-						// TODO Auto-generated catch block
-						e1.printStackTrace();
-						new ErrorDialog("You Don't Have MySQL!").showDialog();
-					} catch (ClassNotFoundException e1) {
-						// TODO Auto-generated catch block
-						e1.printStackTrace();
-						new ErrorDialog("You Don't Have MySQL!").showDialog();
-					}	
+
 				}
 			}
 

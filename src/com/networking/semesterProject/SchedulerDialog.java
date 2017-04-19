@@ -26,6 +26,7 @@ public class SchedulerDialog extends JDialog {
 	 * Create the dialog.
 	 */
 	public SchedulerDialog(Scheduler msgObject)throws SQLException {
+		setTitle("Schedule");
 	
 		
 		
@@ -71,7 +72,6 @@ public class SchedulerDialog extends JDialog {
 		}
 		{
 			JPanel buttonPane = new JPanel();
-			buttonPane.setLayout(new FlowLayout(FlowLayout.RIGHT));
 			getContentPane().add(buttonPane, BorderLayout.SOUTH);
 			{
 				JButton okButton = new JButton("OK");
@@ -82,6 +82,7 @@ public class SchedulerDialog extends JDialog {
 						
 					}
 				});
+				buttonPane.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
 				okButton.setActionCommand("OK");
 				buttonPane.add(okButton);
 				getRootPane().setDefaultButton(okButton);

@@ -30,7 +30,7 @@ public class UserPanel extends JPanel {
 
 		public ExtendedTableModel() {
 			super(new Object[][] {},
-					new Object[] { "Send To", "ID", /* "Logged In", */ "Username"/* , "Full Name" */ });
+					new Object[] { "Send", "ID", /* "Logged In", */ "Username"/* , "Full Name" */ });
 		}
 
 		Class[] columnTypes = new Class[] { Boolean.class, Integer.class,

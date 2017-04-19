@@ -188,7 +188,7 @@ public class UserManager {
 		});
 		panel.add(btnNewButton);
 
-		JButton btnNewButton_3 = new JButton("Insert Row");
+		JButton btnNewButton_3 = new JButton("Insert User");
 		btnNewButton_3.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				model.addRow(new Object[] { false, (int)model.getValueAt(model.getRowCount() - 1, 1) + 1, null, null, null, null, false });

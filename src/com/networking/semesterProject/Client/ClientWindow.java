@@ -31,9 +31,7 @@ import java.awt.event.ActionEvent;
 import javax.swing.JSplitPane;
 
 
-public class ClientWindow {
-
-	JFrame frame;
+public class ClientWindow extends JFrame {
 
 	/**
 	 * Create the application.
@@ -95,9 +93,9 @@ public class ClientWindow {
 		userPanel.UpdateUserList(message.destination);
 	}
 	
-	public void Show() {
-		frame.setVisible(true);
-	}
+	/*public void Show() {
+		setVisible(true);
+	}*/
 	
 
 	private ChatPanel chatPanel;
@@ -108,16 +106,21 @@ public class ClientWindow {
 		public void OnSubmitted(String message, Instant instant);
 	}
 	
+	private JPanel contentPane;
 	/**
 	 * Initialize the contents of the frame.
 	 */
 	private void initialize(Socket clientSocket, Message message) {
-		frame = new JFrame();
-		frame.setTitle("Welcome, " + message.source.userName + "!");
-		frame.setBounds(100, 100, 698, 393);
-		frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 		
-		frame.addWindowListener(new WindowAdapter() {
+		setTitle("Welcome, " + message.source.userName + "!");
+		setBounds(100, 100, 775, 524);
+		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+		
+		contentPane = new JPanel();
+		
+		setContentPane(contentPane);
+		
+		addWindowListener(new WindowAdapter() {
 			
 			@Override
             public void windowClosing(WindowEvent evt){
@@ -133,11 +136,64 @@ public class ClientWindow {
 				parentFrame.setVisible(true);
             }
         });
+		contentPane.setLayout(new BorderLayout(0, 0));
+		
+				JMenuBar menuBar = new JMenuBar();
+				contentPane.add(menuBar, BorderLayout.NORTH);
+				
+				JMenu menuFile = new JMenu("File");
+				menuBar.add(menuFile);
+				
+				JMenuItem getSchedule = new JMenuItem("Get Schedule");
+				getSchedule.addActionListener(new ActionListener() {
+					public void actionPerformed(ActionEvent arg0) {
+
+						Message msg = new Message(Message.Type.Schedule, new User(message.source.id), null, null, null);	
+						
+						MessageHelper messageHelper = new MessageHelper();
+						messageHelper.Start(clientSocket, msg);
+					}
+				});
+				
+				JMenuItem mntmTasks = new JMenuItem("Tasks");
+				mntmTasks.addActionListener(new ActionListener() {
+					public void actionPerformed(ActionEvent e) {
+						
+						
+						//if(!LoginWindow.minimumMode)
+						//{
+							TaskWindow taskWindow = new TaskWindow();
+						       
+							taskWindow.setLocation(getX() + getWidth(), getY());
+							taskWindow.setVisible(true);
+							
+							addWindowListener(new WindowAdapter() {
+								
+								@Override
+					            public void windowClosing(WindowEvent evt){
+									taskWindow.dispatchEvent(new WindowEvent(taskWindow, WindowEvent.WINDOW_CLOSING));
+								}
+							});
+						//}
+						
+						
+					}
+				});
+				menuFile.add(mntmTasks);
+				menuFile.add(getSchedule);
+				
+				JMenuItem mntmClose = new JMenuItem("Close");
+				mntmClose.addActionListener(new ActionListener() {
+					public void actionPerformed(ActionEvent e) {
+						dispatchEvent(new WindowEvent(ClientWindow.this, WindowEvent.WINDOW_CLOSING));
+					}
+				});
+				menuFile.add(mntmClose);
 		
 		JSplitPane splitPane = new JSplitPane();
 		splitPane.setResizeWeight(0.75);
-		frame.getContentPane().add(splitPane, BorderLayout.CENTER);
-		chatPanel = new ChatPanel(frame, new ChatInterface(){
+		contentPane.add(splitPane);
+		chatPanel = new ChatPanel(this, new ChatInterface(){
 
 			@Override
 			public void OnSubmitted(String gotMessage, Instant instant) {
@@ -147,41 +203,17 @@ public class ClientWindow {
 				
 				
 				MessageHelper messageHelper = new MessageHelper();
-				messageHelper.Start(clientSocket, new Message(Type.Send, message.source, userPanel.GetSelectedUsers(), gotMessage, instant));
+				messageHelper.Start(clientSocket, new Message(Message.Type.Send, message.source, userPanel.GetSelectedUsers(), gotMessage, instant));
 				
-			}}, clientSocket, message);
+			}
+		}, clientSocket, message);
 		splitPane.setLeftComponent(chatPanel);
 		
 		//JPanel panel = new JPanel();
 		userPanel = new UserPanel(message.source);
 		splitPane.setRightComponent(userPanel);
-
-		JMenuBar menuBar = new JMenuBar();
-		frame.getContentPane().add(menuBar, BorderLayout.NORTH);
 		
-		JMenu menuFile = new JMenu("File");
-		menuBar.add(menuFile);
-		
-		JMenuItem getSchedule = new JMenuItem("Get Schedule");
-		getSchedule.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent arg0) {
-
-				Message msg = new Message(Type.Schedule, new User(message.source.id), null, null, null);	
-				
-				MessageHelper messageHelper = new MessageHelper();
-				messageHelper.Start(clientSocket, msg);
-			}
-		});
-		menuFile.add(getSchedule);
-		
-		JMenuItem mntmClose = new JMenuItem("Close");
-		mntmClose.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				frame.dispatchEvent(new WindowEvent(frame, WindowEvent.WINDOW_CLOSING));
-			}
-		});
-		menuFile.add(mntmClose);
-		
+	
 	}
 
 }
